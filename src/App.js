@@ -1,9 +1,18 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
-import Button from 'antd/lib/button';
+import { Modal, Button } from 'antd';
+import Login from './components/login'
+
 import './App.css';
 
 class App extends Component {
+  state = {visible:false}
+  showModal = () =>{
+    this.setState({visible:true,});
+  }
+  hideModal = () =>{
+    this.setState({visible:false,});
+  }
   render() {
     return (
       <div className="App">
@@ -12,7 +21,13 @@ class App extends Component {
           <p>
             Edit <code>src/App.js</code> and save to reload. 2018/11/12
           </p>
-          <Button type="primary">Import ANTD</Button>
+          <Button type="primary" onClick={this.showModal}>Import ANTD</Button>
+          <Modal title="modal" visible={this.state.visible} onOk={this.hideModal} onCancel={this.hideModal} okText="ok" cancelText="cancel">
+              <p>Bla bla...1</p>
+              <p>Bla bla...2</p>
+              <p className="mebox">Bla bla...3</p>              
+          </Modal>
+          <Login />
           <a
             className="App-link"
             href="https://reactjs.org"
