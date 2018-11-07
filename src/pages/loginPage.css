@@ -1,0 +1,67 @@
+.login-layout-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: auto;
+}
+@media (min-width: 768px){
+  .login-layout-content {
+    padding: 72px 0 24px;  
+    flex: 1 1;  
+  }
+}
+.login-layout-top {
+  text-align: center;
+}
+.login-layout-nav{
+  text-align: right;
+  width: 100%;
+  height: 40px;
+  line-height: 44px;
+}
+.login-layout-top-logo{
+  border:none;
+  height: 44px;
+  vertical-align: top;
+  margin-right: 16px;
+}
+.login-layout-top-header{
+  height: 44px;
+  line-height: 44px;
+}
+.login-layout-top-title{
+  font-size: 33px;
+  color: rgba(0,0,0,.85);
+  font-family: Myriad Pro,Helvetica Neue,Arial,Helvetica,sans-serif;
+  font-weight: 600;
+  position: relative;
+  top: 2px;
+}
+.login-layout-top-desc{
+  font-size: 14px;
+  color: rgba(0,0,0,.45);
+  margin-top: 12px;
+  margin-bottom: 40px;
+}
+.login-layout-form {
+  width: 368px;
+  margin: 0 auto;
+}
+.login-form-item{
+  margin: 0 2px 24px;
+}
+.login-form-item-bottom{
+  margin: 0 2px 4px;
+}
+.login-form-forgot{
+  float: right;
+}
+
+footer.login-layout-footer {
+  padding: 0 16px;
+  margin: 48px 0 24px;
+  text-align: center;
+}
+.login-layout-footer-copyrigyt{
+  color: rgba(0, 0, 0, 0.45);
+}
