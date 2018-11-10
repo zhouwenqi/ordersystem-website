@@ -1,0 +1,23 @@
+/**
+ * data-grid样式
+ */
+.grid-box{
+    padding:white;
+    font-size: 12px;    
+}
+
+.grid-box .ant-table-small > .ant-table-content > .ant-table-body > table > .ant-table-thead > tr > th {
+    background-color: #f3f3f3;
+}
+.grid-box .ant-table-small > .ant-table-content > .ant-table-body {
+    margin:0 0;
+}
+/**
+ * form样式
+ */
+.grid-form{
+    border-top: 1px solid #e8e8e8;
+    border-bottom: 1px solid #e8e8e8;
+    border-radius: 4px;
+    padding:20px;
+}

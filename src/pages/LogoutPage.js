@@ -10,6 +10,4 @@ class LogoutPage extends React.Component {
         return(<div></div>);
     }
 }
-
-
 export default LogoutPage;

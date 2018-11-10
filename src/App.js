@@ -27,6 +27,7 @@ class App extends Component {
       <BrowserRouter>
           <React.Fragment>
             <Route path="/" exact component={MainPage} />
+            <Route path="/dash" component={MainPage} />
             <Route path="/login" component={LoginPage} />
             <Route path="/logout" component={LogoutPage} />
           </React.Fragment>            
