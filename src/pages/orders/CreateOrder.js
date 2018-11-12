@@ -21,14 +21,14 @@ class CreateOrderForm extends React.Component {
         const {getFieldDecorator} = this.props.form;
         return (
         <div className="grid-form">
-            <Form size="small" style={{width:'60%',margin:'auto auto'}}>
+            <Form size="small" style={{width:'900px'}}>
                 <Row gutter={24}>
                     <Col span={12}>
                         <FormItem {...formItemLayout}
                             label="订单来源">
                             {getFieldDecorator('userCreate',
                             {rules:[{required:false}]
-                            })(<Input type="text" placeholder="成都盯盯" />)} 
+                            })(<Input disabled type="text" placeholder="成都盯盯" />)} 
                         </FormItem>                    
                     </Col>
                     <Col span={12}>
@@ -36,7 +36,11 @@ class CreateOrderForm extends React.Component {
                             label="订单类型">
                             {getFieldDecorator('orderType',
                             {rules:[{required:true,message:'请选择订单类型'}]
-                            })(<Input type="text" placeholder="订单类型" />)} 
+                            })(<Select placeholder="订单类型">
+                                <Option value="4444">44444</Option>
+                                <Option value="5555">555555</Option>
+                                <Option value="6666">66666666</Option>
+                            </Select>)} 
                         </FormItem>                    
                     </Col>
                 </Row>
@@ -51,10 +55,10 @@ class CreateOrderForm extends React.Component {
                     </Col>
                     <Col span={12}>
                         <FormItem {...formItemLayout}
-                            label="源单日期">
+                            label="派单日期">
                             {getFieldDecorator('assignDate',
-                            {rules:[{required:true,message:'请选择订单类型'}]
-                            })(<Input type="text" placeholder="订单类型" />)} 
+                            {rules:[{required:true,message:'请选择派单日期'}]
+                            })(<DatePicker placeholder="派单日期" />)} 
                         </FormItem>                    
                     </Col>
                 </Row>
@@ -88,10 +92,36 @@ class CreateOrderForm extends React.Component {
                     <Col span={12}>
                         <FormItem {...formItemLayout}
                             label="客户联系人">
-                            {getFieldDecorator('consumerContact',
+                            {getFieldDecorator('drrwer',
                             {rules:[{required:true,message:'客户联系人不能为空'}]
                             })(<Input type="text" placeholder="万达广场" />)} 
                         </FormItem>                    
+                    </Col>
+                </Row>
+                <Row gutter={24}>
+                    <Col span={8}>
+                        <FormItem {...formItemLayout}
+                            label="省">
+                            {getFieldDecorator('province',
+                            {rules:[{required:true,message:'请选择省'}]
+                            })(<Select placeholder="请选择" />)} 
+                        </FormItem>                     
+                    </Col>
+                    <Col span={8}>
+                        <FormItem {...formItemLayout}
+                            label="市">
+                            {getFieldDecorator('city',
+                            {rules:[{required:true,message:'请选择市'}]
+                            })(<Select placeholder="请选择" />)} 
+                        </FormItem>                     
+                    </Col>
+                    <Col span={8}>
+                        <FormItem {...formItemLayout}
+                            label="区">
+                            {getFieldDecorator('area',
+                            {rules:[{required:true,message:'请选择区'}]
+                            })(<Select placeholder="请选择" />)} 
+                        </FormItem>                     
                     </Col>
                 </Row>
                 

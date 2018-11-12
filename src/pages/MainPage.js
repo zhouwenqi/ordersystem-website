@@ -22,13 +22,15 @@ class MainPage extends React.Component {
         }else{
             window.config.token = cookie.load("chToken");
         }
-        const pathName = webUtil.getRouteName(this.props.location.pathname);
+        const pathName = webUtil.getRouteName(this.props.location.pathname);        
         console.log(pathName);
-        if(pathName!=undefined && pathName!=''){
-            this.setState({
-                currentMenuIndex:pathName
-            })
+        var menuItemTag = pathName;
+        if(menuItemTag===undefined || pathName===''){
+            menuItemTag = 'dash.order';
         }
+        this.setState({
+            currentMenuIndex:menuItemTag
+        });
     }
     componentDidMount =() =>{
         if(window.config.token===undefined){
@@ -70,7 +72,8 @@ class MainPage extends React.Component {
                     </Sider>
                     <Layout style={{overflow:'auto'}}>
                         <Content style={{padding:'14px',background:'white'}}>                          
-                            <Route path="/dash" exact component={OrderList} />                         
+                            <Route path="/" exact component={OrderList} />
+                            <Route path="/dash" exact component={OrderList} />
                             <Route path="/dash/order" exact component={OrderList} />
                             <Route path="/dash/order/create" exact component={CreateOrder} />
                         </Content>

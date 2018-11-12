@@ -55,11 +55,12 @@ class OrderList extends React.Component {
     }
     headerRowStyle=(column, index)=>{
 
-    }
-    rowDoubleClick=(record)=>{
-        console.log(record);
-
-    }
+    }   
+    onRowClick=(record)=>({
+        onDoubleClick:()=>{
+            console.log(record);
+        }
+    });
     
     gotoPage=(current,pageSize)=>{
         this.setState({
@@ -84,7 +85,7 @@ class OrderList extends React.Component {
         }
         return (
         <div className='grid-box'>
-            <Table pagination={pageable} onRowDoubleClick={this.rowDoubleClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.dataSource} bordered />
+            <Table pagination={pageable} onRow={this.onRowClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.dataSource} bordered />
         </div>);
     }
 }
