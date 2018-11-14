@@ -70,8 +70,8 @@ class MainPage extends React.Component {
                             </SubMenu>                            
                         </Menu>
                     </Sider>
-                    <Layout style={{overflow:'auto'}}>
-                        <Content style={{padding:'14px',background:'white'}}>                          
+                    <Layout style={{overflow:'auto',backgroundColor:'white',padding:'12px'}}>
+                        <Content>                          
                             <Route path="/" exact component={OrderList} />
                             <Route path="/dash" exact component={OrderList} />
                             <Route path="/dash/order" exact component={OrderList} />
