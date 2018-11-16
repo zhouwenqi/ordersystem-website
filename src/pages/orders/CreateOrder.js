@@ -1,5 +1,11 @@
 import React from 'react';
-import { Form, Input,Tabs, Button, Icon, Row, Message, Checkbox, DatePicker,Col,TimePicker,Select,Cascader,InputNumber } from 'antd';
+import { 
+    Form, Input,Tabs, Button,
+     Icon, Row, Message, Checkbox,
+     Cascader, DatePicker,Col,
+     TimePicker,Select,InputNumber
+} from 'antd';
+import areaData from '../../utils/AreaData';
 import './order.css';
 
 const FormItem = Form.Item;
@@ -24,8 +30,21 @@ const btnItemLayout = {
     },
 };
 
-
+/**
+ * 创建订单
+ */
 class CreateOrderForm extends React.Component {
+    /**
+     * 提交表单
+     */
+    handleSubmit = (e) =>{
+        e.preventDefault();
+        this.props.form.validateFields((err,values) => {
+            if(!err) {
+                this.login(values);
+            }
+        });
+    }
     
     render = ()=> {
         const {getFieldDecorator} = this.props.form;
@@ -33,7 +52,7 @@ class CreateOrderForm extends React.Component {
         <div className="grid-form">
             <Tabs>
                 <TabPane tab="订单基本信息">
-                    <Form size="small" style={{padding:'10px 0px'}}>
+                    <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>
                         <Row>
                             <Col span={12}>
                                 <Row>
@@ -109,37 +128,17 @@ class CreateOrderForm extends React.Component {
                                             })(<Input type="text" placeholder="" />)} 
                                         </FormItem>                     
                                     </Col>                            
-                                </Row>                        
-                                <Row>
-                                    <Col span={24}>
-                                        <FormItem {...formItemLayout}
-                                            label="省">
-                                            {getFieldDecorator('province',
-                                            {rules:[{required:true,message:'请选择省'}]
-                                            })(<Select placeholder="请选择" />)} 
-                                        </FormItem>                     
-                                    </Col>
                                 </Row>
                                 <Row>
                                     <Col span={24}>
                                         <FormItem {...formItemLayout}
-                                            label="市">
-                                            {getFieldDecorator('city',
+                                            label="省/市/区">
+                                            {getFieldDecorator('areas',
                                             {rules:[{required:true,message:'请选择市'}]
-                                            })(<Select placeholder="请选择" />)} 
+                                            })(<Cascader changeOnSelect={true} options={areaData} placeholder="请选择" />)} 
                                         </FormItem>                     
                                     </Col>
                                 </Row>
-                                <Row>
-                                    <Col span={24}>
-                                        <FormItem {...formItemLayout}
-                                            label="区">
-                                            {getFieldDecorator('city',
-                                            {rules:[{required:true,message:'请选择市'}]
-                                            })(<Select placeholder="请选择" />)} 
-                                        </FormItem>                     
-                                    </Col>
-                                </Row> 
                                 <Row>
                                     <Col span={24}>
                                         <FormItem {...formItemLayout}
