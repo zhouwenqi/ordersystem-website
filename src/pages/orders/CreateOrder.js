@@ -5,7 +5,10 @@ import {
      Cascader, DatePicker,Col,
      TimePicker,Select,InputNumber
 } from 'antd';
-import areaData from '../../utils/AreaData';
+import moment from 'moment';
+import areaData from '../../common/AreaData';
+import orderType from '../../common/OrderType';
+import httpUtil from '../../utils/HttpUtils';
 import './order.css';
 
 const FormItem = Form.Item;
@@ -35,24 +38,57 @@ const btnItemLayout = {
  */
 class CreateOrderForm extends React.Component {
     /**
-     * 提交表单
+     * 验证表单
      */
     handleSubmit = (e) =>{
         e.preventDefault();
         this.props.form.validateFields((err,values) => {
             if(!err) {
-                this.login(values);
+                this.submitOrder(values);
             }
         });
+    }
+
+    /**
+     * 提交订单
+     */
+    submitOrder = (data) =>{
+        data.assignDate = data.assignDate.format("YYYY-MM-DD");
+        if(data.areas.length>0){
+            data.province = data.areas[0];
+        }
+        if(data.areas.length>1){
+            data.city = data.areas[1];
+        }
+        if(data.areas.length>2){
+            data.area = data.areas[2];
+        }
+        // 设置客户来源
+        data.orderUserId = window.config.user.id;
+        // 设置授理时间
+        data.acceptDate = '2018/11/20';
+       
+
+        httpUtil.post("/api/order/create",data).then(function(response){
+            if(response === undefined || response==null){
+                return;
+            } 
+            console.log(response);
+        });
+        console.log(data);
     }
     
     render = ()=> {
         const {getFieldDecorator} = this.props.form;
+        const orderTypes = [];
+        orderType.map((item,index)=>{            
+            orderTypes.push(<Option key={index} value={item.value}>{item.label}</Option>);
+        });
         return (
         <div className="grid-form">
             <Tabs>
-                <TabPane tab="订单基本信息">
-                    <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>
+                <TabPane tab="订单基本信息" key="basic-info">
+                    <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>                        
                         <Row>
                             <Col span={12}>
                                 <Row>
@@ -72,9 +108,7 @@ class CreateOrderForm extends React.Component {
                                             {getFieldDecorator('orderType',
                                             {rules:[{required:true,message:'请选择订单类型'}]
                                             })(<Select placeholder="请选择订单类型">
-                                                <Option value="4444">44444</Option>
-                                                <Option value="5555">555555</Option>
-                                                <Option value="6666">66666666</Option>
+                                                {orderTypes}
                                             </Select>)} 
                                         </FormItem>                    
                                     </Col>
@@ -149,8 +183,25 @@ class CreateOrderForm extends React.Component {
                                         </FormItem>                    
                                     </Col>
                                 </Row>  
+                                <Row>
+                                    <Col span={24}>
+                                        <FormItem {...btnItemLayout}>
+                                            <Button type="primary" htmlType="submit">提交订单</Button>
+                                        </FormItem>
+                                    </Col>                                    
+                                </Row>
                             </Col>
                             <Col span={12}>
+                                <Row>
+                                    <Col span={24}>
+                                        <FormItem {...formItemLayout}
+                                            label="受理日期">
+                                            {getFieldDecorator('acceptDate',
+                                            {rules:[{required:true,message:'请选择受理日期'}],initialValue:moment(new Date(),"YYYY-MM-DD")
+                                            })(<DatePicker disabled placeholder="选择受理日期" />)} 
+                                        </FormItem>                    
+                                    </Col>
+                                </Row>  
                                 <Row>
                                     <Col span={24}>
                                         <FormItem {...formItemLayout}
@@ -170,13 +221,6 @@ class CreateOrderForm extends React.Component {
                                             })(<TextArea type="textarea" rows={10} placeholder="" />)} 
                                         </FormItem>                    
                                     </Col>
-                                </Row> 
-                                <Row>
-                                    <Col span={24}>
-                                        <FormItem {...btnItemLayout}>
-                                            <Button  type="primary" htmlType="submit">提交订单</Button>
-                                        </FormItem>
-                                    </Col>                                    
                                 </Row>
                             </Col>
                         </Row>

@@ -1,5 +1,6 @@
 import { Message } from 'antd';
 import axios from 'axios';
+import qs from 'qs'
 const axiosService = axios.create({
     baseURL:'http://localhost:9018',
     timeout:20000
@@ -7,6 +8,10 @@ const axiosService = axios.create({
 axiosService.interceptors.request.use(
     config => {
         config.headers['ch-token'] = window.config.token;
+        config.headers['Content-Type'] = 'application/x-www-form-urlencoded';  
+        if(config.method==='post'){
+            config.data = qs.stringify(config.data);
+        }     
         return config;
     },
     error => {

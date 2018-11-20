@@ -1,3 +1,6 @@
+/**
+ * 省市区数据
+ */
 const AreaData = [
     {
         "value": "北京市", 
