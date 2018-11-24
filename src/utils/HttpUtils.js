@@ -8,10 +8,11 @@ const axiosService = axios.create({
 axiosService.interceptors.request.use(
     config => {
         config.headers['ch-token'] = window.config.token;
-        config.headers['Content-Type'] = 'application/x-www-form-urlencoded';  
+        config.headers['Content-Type'] = 'application/x-www-form-urlencoded';         
         if(config.method==='post'){
             config.data = qs.stringify(config.data);
-        }     
+        }
+        
         return config;
     },
     error => {
@@ -19,7 +20,7 @@ axiosService.interceptors.request.use(
     }   
 );
 axiosService.interceptors.response.use(
-    response => {
+    response => {        
         var resultData = null;
         if(response.data!==undefined){
             resultData = response.data;

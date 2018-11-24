@@ -2,7 +2,7 @@ import React from 'react';
 import { 
     Form, Input,Tabs, Button,
      Icon, Row, Message, Checkbox,
-     Cascader, DatePicker,Col,
+     Cascader, DatePicker,Col,Modal,
      TimePicker,Select,InputNumber
 } from 'antd';
 import moment from 'moment';
@@ -37,6 +37,9 @@ const btnItemLayout = {
  * 创建订单
  */
 class CreateOrderForm extends React.Component {
+    state = {
+        loading:false
+    }
     /**
      * 验证表单
      */
@@ -66,16 +69,29 @@ class CreateOrderForm extends React.Component {
         // 设置客户来源
         data.orderUserId = window.config.user.id;
         // 设置授理时间
-        data.acceptDate = '2018/11/20';
-       
+        data.acceptDate = moment(new Date(),"YYYY-MM-DD");
+        
+        this.setState({
+            loading:true
+        });
 
-        httpUtil.post("/api/order/create",data).then(function(response){
-            if(response === undefined || response==null){
-                return;
-            } 
+        var base = this;
+        httpUtil.post("/api/order/create",data).then(function(response){            
+            base.setState({
+                loading:false
+            });
+            if(response){
+                Modal.success({
+                    title: '提交成功',
+                    content: '您的订单已提交成功，请等待审核',
+                    okText: '好的',
+                    onOk(){
+                        base.props.history.push("/dash/order");
+                    }
+                });                
+            }
             console.log(response);
         });
-        console.log(data);
     }
     
     render = ()=> {
@@ -186,7 +202,7 @@ class CreateOrderForm extends React.Component {
                                 <Row>
                                     <Col span={24}>
                                         <FormItem {...btnItemLayout}>
-                                            <Button type="primary" htmlType="submit">提交订单</Button>
+                                            <Button loading={this.state.loading} type="primary" htmlType="submit">提交订单</Button>
                                         </FormItem>
                                     </Col>                                    
                                 </Row>
