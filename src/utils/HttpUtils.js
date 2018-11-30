@@ -8,8 +8,8 @@ const axiosService = axios.create({
 axiosService.interceptors.request.use(
     config => {
         config.headers['ch-token'] = window.config.token;
-        config.headers['Content-Type'] = 'application/x-www-form-urlencoded';         
-        if(config.method==='post'){
+        config.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        if(config.method==='post' || config.method==='put'){
             config.data = qs.stringify(config.data);
         }
         
@@ -25,13 +25,15 @@ axiosService.interceptors.response.use(
         if(response.data!==undefined){
             resultData = response.data;
         }
-        console.log(response);
         if(resultData !== null){
             if(resultData.code!==200){
                 Message.warning(resultData.msg);
                 return;
             }
-            return resultData.data;
+            if(resultData.data!==undefined && resultData!=null){
+                return resultData.data;
+            }
+            return {};
         }
     },
     error => {
@@ -41,9 +43,7 @@ axiosService.interceptors.response.use(
             if(code===700 || code === 701 || code === 702 || code === 900 || code === 901 || code === 902){
                 errMsg = error.response.data.msg;
             }
-        }
-        
-        console.log(error.response);
+        }        
         Message.error(errMsg);
     }
 );

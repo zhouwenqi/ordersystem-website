@@ -1,99 +1,225 @@
 import React from 'react';
-import { Form, Input, Button, Icon, Row, Message, Checkbox, Table } from 'antd';
+import { Link } from 'react-router-dom';
+import { Form, Input, Modal,Menu,Dropdown, Button, Select, Icon, Row, Spin, Message, Checkbox, Table, Col } from 'antd';
 import httpUtil from '../../utils/HttpUtils';
 import webUtil from '../../utils/WebUtils';
+import moment from 'moment';
+import BasePage from '../BasePage';
 
 import './order.css';
-
+const Confirm = Modal.confirm;
+const Search = Input.Search;
+const InputGroup = Input.Group;
+const Option = Select.Option;
 /**
  * 订单列表
  */
-class OrderList extends React.Component {
-    constructor(props) {
-        super(props);
+class OrderListForm extends BasePage {
+    constructor(props,context) {
+        super(props,context);
         this.state={
-            pageInfo:{},
+            pageInfo:{
+                pageSize:20,
+                current:1,
+                total:0,
+                sortField:"create_date",
+                sortDirection:"desc"
+            },       
             dataSource:[],
             loading:false
         };
     }
+
+    /**
+     * 返回列表中的订单状态
+     */
+    getOrderStatusSetup=(record)=>{
+        const subMenu = <Menu>
+            <Menu.Item>待派单</Menu.Item>
+            <Menu.Item>更进中</Menu.Item>
+            <Menu.Item>待验收</Menu.Item>
+            <Menu.Item>已完结</Menu.Item>
+            <Menu.Item>已取消</Menu.Item>
+        </Menu>
+        let statusColor = webUtil.getOrderStatusColor(record.orderStatus);
+        return (<Dropdown overlay={subMenu}><Row><label color={statusColor} style={{cursor:"pointer",color:statusColor}}>{record.orderStatus}</label><Icon type="down" style={{marginLeft:"4px"}} /></Row></Dropdown>);
+    }
+
+    /**
+     * 返回列表中的操作按钮
+     */
+    getOperationMenus=(record)=>{
+        let viewBtn = <Link className="item-a" to={'/dash/order/view/'+record.id} title="查看订单详情"><Icon type="ellipsis" theme="outlined" /></Link>;
+        var editBtn,deleteBtn;
+        if(record && record.orderStatus==="待派单"){
+            editBtn = <Link to={'/dash/order/edit/'+record.id} className="item-a" title="修改"><Icon type="edit" theme="outlined" /></Link>;
+            deleteBtn = <a className="item-a delete" onClick={this.deleteOrder.bind(this,record,record.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>
+        }
+        return (<Row>{viewBtn}{editBtn}{deleteBtn}</Row>);
+    }
     
-    componentWillMount = () =>{   
-            
+    componentWillMount = () =>{
+        // 表格列头
         this.dataColumns = [
-            {title:'晨颢工单',dataIndex:'sn',render:text=><a href="javascript:void(0)">{text}</a>},
-            {title:'受理日期',dataIndex:'acceptDate'},
-            {title:'订单类型',dataIndex:'orderType'},
-            {title:'订单工期',dataIndex:'orderTime'},
-            {title:'客户名称',dataIndex:'consumerName'},
-            {title:'客户联系人',dataIndex:'consumerContact'},
-            {title:'联系电话',dataIndex:'consumerPhone'},
-            {title:'省',dataIndex:'province'},
-            {title:'市',dataIndex:'city'},
-            {title:'区',dataIndex:'area'},
-            {title:'派单时间',dataIndex:'assignDate'},
-            {title:'创建时间',dataIndex:'createDate'},
-            {title:'操作',dataIndex:'',render:id=><a href="javascript:void(0)">删除</a>},
-        ];
-        this.dataSource = [
-            {sn:'2020284',id:1,acceptDate:'2018/11/9 13:29:33',orderType:'监控检修',orderTime:'2018/20/12',consumerName:'apple',consumerContact:'zhouwenqi',consumerPhone:'18665111530',provice:'广东省',city:'深圳市',area:'罗湖区',assignDate:'2018/12/1 13:38:50',createDate:'2018/10/1 14:23:42'},            
-            {sn:'2020284',id:2,acceptDate:'2018/11/9 13:29:33',orderType:'监控检修',orderTime:'2018/20/12',consumerName:'apple',consumerContact:'zhouwenqi',consumerPhone:'18665111530',provice:'广东省',city:'深圳市',area:'罗湖区',assignDate:'2018/12/1 13:38:50',createDate:'2018/10/1 14:23:42'}
+            {title:'晨颢工单',sorter: true,dataIndex:'sn',render:(id,record)=>(<Link to={'/dash/order/view/'+record.id}>{record.sn}</Link>)},
+            {title:'订单类型',sorter: true,dataIndex:'orderType'},
+            {title:'订单工期',sorter: true,dataIndex:'orderTime'},
+            {title:'客户名称',sorter: true,dataIndex:'consumerName'},
+            {title:'客户联系人',sorter: true,dataIndex:'consumerContact'},
+            {title:'联系电话',sorter: true,dataIndex:'consumerPhone'},           
+            {title:'地区',sorter: true,dataIndex:'area'},
+            {title:'派单时间',sorter: true,dataIndex:'assignDate',render:(text)=>(moment(text).format("YYYY-MM-DD"))},
+            {title:'创建时间',sorter: true,dataIndex:'createDate',defaultSortOrder: 'descend'},
+            {title:'状态',dataIndex:'orderStatus',render:(id,record)=>(this.getOrderStatusSetup(record))},
+            {title:'操作',dataIndex:'',render:(id,record)=>(this.getOperationMenus(record))},
         ];
     }
     componentDidMount = ()=>{
-        this.searchOrder();
+        this.searchOrder(this.state.pageInfo);
     }
-    searchOrder = ()=> {
-        var base = this;
-        var data = {
-            params:{
-                pageSize:base.state.pageSize,
-                pageNumber:base.state.current
-            }
-        }
+    /**
+     * 删除订单
+     */
+    deleteOrder = (record,id)=>{
+        const base = this;
+        Confirm({
+            title: '删除此订单',
+            content: '确定要删除这张订单吗？',
+            onOk() {
+                var params = {id:id};
+                httpUtil.delete("/api/order/delete",{params:params}).then(function(response){
+                    console.log("data",response);
+                    if(response){
+                        var items = base.state.dataSource;                        
+                        for(var i=0;i<items.length;i++){                            
+                            if(items[i].id===id){
+                                items.splice(i,1);
+                            }
+                        }
+                        base.setState({
+                            dataSource:items,
+                        })
+                    }
+                });
+            },
+            onCancel() {},
+          });
         
+    }
+    /**
+     * 订单查询
+     */
+    searchOrder = (params = {})=> {
+        const base = this;       
         base.setState({
             loading:true,
-        })
-        httpUtil.get("/api/order/search",data).then(function(response){
+        });
+
+        httpUtil.get("/api/order/search",{params:params}).then(function(response){
             if(response){
                 var pageInfo = response.pageInfo;
-                var pagination = {...base.state.pageCount};
+                var pagination = {...base.state.pageInfo};
                 pagination.total = pageInfo.total;
-                console.log("total:"+pagination.total);
+                pagination.current = pageInfo.pageNumber;                
                 base.setState({
                     dataSource:response.list,
                     loading:false,
                     pageInfo:pagination,
-
                 })
             }
         });
     }
-    handleTableChange=(pageination,filters,sorter) => {
-        const pager = {...this.state.pageInfo};
-        pager.current = pageination.current;
+
+    /**
+     * 切换页码
+     */
+    handleTableChange=(pagination,filters,sorter) => {        
+        var pager = {...this.state.pageInfo};
+        pager.current = pagination.current;
+        pager.pageNumber = pagination.current;
+        console.log("sorter",sorter);
+        if(sorter.field){
+            pager.sortDirection = sorter.order.replace("end","");
+            pager.sortField = webUtil.getHumpString(sorter.field);
+        }else{
+            pager.sortDirection = "desc";
+            pager.sortField = "create_date"
+        }
+        
         this.setState({
-            pageInfo:pager,
-        });
-        this.searchOrder();
+            pageInfo:pager,            
+        })
+        this.searchOrder(pager);
+
     }
 
-    headerRowStyle=(column, index)=>{
+    /**
+     * 提交查询条件
+     */
+    handleSubmit=(e,event)=>{
+        event.preventDefault();
+        const base = this;
+        this.props.form.validateFields((err, values) => {
+            if (!err) {
+                var pagination = {...base.state.pageInfo};
+                pagination.searchProperty = values.searchProperty;
+                pagination.searchValue = values.searchValue;
+                base.setState({
+                    pageInfo:pagination
+                });
+                base.searchOrder(pagination);
+            }
+        });
 
-    }   
+    }
+
+    /**
+     * 表格点击事件
+     */
     onRowClick=(record)=>({
+        // 双击事件
         onDoubleClick:()=>{
             console.log(record);
         }
     });
 
-    render = ()=> {
+    getTableFooter=()=>{
+        const base = this;
+        return (<label>共找到<span style={{color:"#1890ff"}}> {base.state.pageInfo.total} </span>条订单数据</label>);
+    }
+
+    render=()=>{
+        const {getFieldDecorator} = this.props.form;        
+        const beforeSearchKeys = getFieldDecorator("searchProperty",{initialValue:"sn"})(
+         <Select>
+            <Option value="sn">订单号</Option>
+            <Option value="uid">帐号</Option>
+            <Option value="consumer_name">客户名称</Option>
+            <Option value="consumer_contact">客户联系人</Option>
+            <Option value="consumer_phone">联系电话</Option>
+        </Select>);
+
         return (
-        <div className='grid-box'>
-            <Table pagination={this.state.pageInfo} onChange={this.handleTableChange} onRow={this.onRowClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
-        </div>);
+            <div className='grid-box'>        
+                <Form onSubmit={this.handleSubmit}>
+                    <Row style={{margin:"0px 0px 10px 0px"}}>
+                        <Col span={6}>
+                            <InputGroup>
+                            {getFieldDecorator('searchValue',
+                                {rules:[{required:false}]
+                                })(                          
+                                    <Search onSearch={this.handleSubmit} addonBefore={beforeSearchKeys} enterButton placeholder="请输入查询关键词" />
+                                )}
+                            </InputGroup>
+                        </Col>
+                        <Col style={{textAlign:"right"}} offset={12} span={6}>                        
+                            <Button icon="file-excel">导出Excel</Button>
+                        </Col>
+                    </Row>                
+                </Form>
+                <Table footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} onRow={this.onRowClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
+            </div>);
     }
 }
-
+const OrderList = Form.create()(OrderListForm);
 export default OrderList;

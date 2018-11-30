@@ -37,8 +37,7 @@ class LoginPageForm extends React.Component {
         httpUtil.get("/login",params).then(function(response){
             if(response === undefined || response==null){
                 return;
-            }    
-            window.config.user = response.user;
+            }
             window.config.token = response.token;
             cookie.save('chToken', response.token, { path: '/' }); 
             // 保存token到cookie

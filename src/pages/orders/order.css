@@ -13,8 +13,39 @@
     margin:0 0;
 }
 /**
- * form样式
+ * form 样式
  */
 .grid-form{
     border-radius: 4px;
+}
+.ant-layout a.item-a{
+    margin:0px 4px;
+}
+.ant-layout a.item-a i{
+    color:#999999;
+}
+.ant-layout a.item-a i:hover{
+    color:#1890ff;
+}
+.ant-layout a.delete i:hover{
+    color:red;
+}
+.grid-box .ant-table-small.ant-table-bordered .ant-table-footer{
+    border-right:none;
+    padding:6px 8px;
+}
+/**
+ * view 样式
+ */
+.view-box{
+    padding:8px 14px;
+}
+.view-box label{
+    margin-right:10px;
+}
+.view-box span{
+    color:#999999;
+}
+.view-box .ant-row{
+    padding:6px 0px;
 }
