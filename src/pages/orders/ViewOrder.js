@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Spin, Tabs, Message, Col,Row,Button,Breadcrumb } from 'antd';
 import moment from 'moment';
-import httpUtil from '../../utils/HttpUtils';
+import httpUtils from '../../utils/HttpUtils';
 import BasePage from '../BasePage';
 import WebUtils from '../../utils/WebUtils';
 
@@ -34,9 +34,13 @@ class ViewOrder extends BasePage {
         let params={
             id:base.props.match.params.id
         }
-        httpUtil.get("/api/order/info",{params:params}).then(function(response){
-            if(response){  
-                let isOrderEdit = response.order.orderStatus==='待派单';
+        httpUtils.get("/api/order/info",{params:params}).then(function(response){
+            if(response){
+                const user = window.config.user;
+                let isOrderEdit = response.order.orderStatus==='pending';
+                if(user.role==='manager' || user.role==='employee'){
+                    isOrderEdit = true;
+                }                
                 base.setState({                    
                     orderInfo:response.order, 
                     loading:false,
@@ -75,7 +79,7 @@ class ViewOrder extends BasePage {
             </ButtonGroup>
         )
         if(order.sn!=undefined){
-            viewContent = <Tabs tabBarExtraContent={extOperations}>
+            viewContent = <div className="grid-form" style={{padding:"10px 0px"}}><Tabs tabBarExtraContent={extOperations} type="card">
                 <TabPane tab="订单信息" key="basic-info">
                     <div className="view-box">   
                         <Col span={8}>
@@ -99,7 +103,7 @@ class ViewOrder extends BasePage {
                         </Col> 
                     </div>
                 </TabPane>
-            </Tabs>;
+            </Tabs></div>;
         }
         return(
             <Spin spinning={this.state.loading}>

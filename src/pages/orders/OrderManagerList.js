@@ -1,20 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Form, Input, Modal, Button, Select, Icon, Row, Table, Col } from 'antd';
+import { Form, Input, Modal,Menu,Dropdown, Button, Select, Icon, Row, Spin, Message, Checkbox, Table, Col } from 'antd';
 import HttpUtils from '../../utils/HttpUtils';
 import WebUtils from '../../utils/WebUtils';
 import moment from 'moment';
 import BasePage from '../BasePage';
 
 import './order.css';
-import OrderStatus from '../../common/OrderStatus';
 import OrderType from '../../common/OrderType';
+import OrderStatus from '../../common/OrderStatus';
 const Confirm = Modal.confirm;
 const Search = Input.Search;
 const InputGroup = Input.Group;
 const Option = Select.Option;
+
 /**
- * 客户 - 订单列表
+ * 后台管理 - 订单列表
  */
 class OrderListForm extends BasePage {
     constructor(props,context) {
@@ -35,10 +36,17 @@ class OrderListForm extends BasePage {
     /**
      * 返回列表中的订单状态
      */
-    getOrderStatusSetup=(record)=>{        
+    getOrderStatusSetup=(record)=>{
+        const subMenu = <Menu>
+            <Menu.Item>待派单</Menu.Item>
+            <Menu.Item>更进中</Menu.Item>
+            <Menu.Item>待验收</Menu.Item>
+            <Menu.Item>已完结</Menu.Item>
+            <Menu.Item>已取消</Menu.Item>
+        </Menu>
         let statusColor = WebUtils.getOrderStatusColor(record.orderStatus);
         const orderStatus = WebUtils.getEnumTag(OrderStatus,record.orderStatus);
-        return (<Row><label color={statusColor} style={{cursor:"pointer",color:statusColor}}>{orderStatus}</label></Row>);
+        return (<Dropdown overlay={subMenu}><Row><label color={statusColor} style={{cursor:"pointer",color:statusColor}}>{orderStatus}</label><Icon type="down" style={{marginLeft:"4px"}} /></Row></Dropdown>);
     }
 
     /**
@@ -55,11 +63,10 @@ class OrderListForm extends BasePage {
      */
     getOperationMenus=(record)=>{
         let viewBtn = <Link className="item-a" to={'/dash/order/view/'+record.id} title="查看订单详情"><Icon type="ellipsis" theme="outlined" /></Link>;
-        var editBtn,deleteBtn;
-        if(record && record.orderStatus==="pending"){
-            editBtn = <Link to={'/dash/order/edit/'+record.id} className="item-a" title="修改"><Icon type="edit" theme="outlined" /></Link>;
-            deleteBtn = <a className="item-a delete" onClick={this.deleteOrder.bind(this,record,record.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>
-        }
+        var editBtn,deleteBtn;       
+        editBtn = <Link to={'/dash/order/edit/'+record.id} className="item-a" title="修改"><Icon type="edit" theme="outlined" /></Link>;
+        deleteBtn = <a className="item-a delete" onClick={this.deleteOrder.bind(this,record,record.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>
+        
         return (<Row>{viewBtn}{editBtn}{deleteBtn}</Row>);
     }
     
@@ -220,7 +227,7 @@ class OrderListForm extends BasePage {
                         <Col style={{textAlign:"right"}} offset={12} span={6}>                        
                             <Button icon="file-excel">导出Excel</Button>
                         </Col>
-                    </Row>
+                    </Row>                
                 </Form>
                 <Table footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} onRow={this.onRowClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
             </div>);

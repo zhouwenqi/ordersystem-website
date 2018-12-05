@@ -1,4 +1,4 @@
-import httpUtil from '../utils/HttpUtils';
+import HttpUtil from '../utils/HttpUtils';
 
 let timeout;
 let currentKeywords;
@@ -18,7 +18,7 @@ class ChSearch {
         currentKeywords = keywords;
         function getCustomerData(){
             let params={role:"customer",akName:keywords};
-            httpUtil.get("/api/user/list",{params:params}).then(function(response){
+            HttpUtil.get("/api/user/list",{params:params}).then(function(response){
                 if(response && currentKeywords===keywords){
                     console.log(response.list);
                     func(response.list);
@@ -30,22 +30,55 @@ class ChSearch {
     /**
      * 查询内部人员列表
      */
-    employeeList = (keywords,func)=>{
+    employeeList = (func)=>{
         if(timeout){
             clearTimeout(timeout);
             timeout = null;
         }
-        currentKeywords = keywords;
         function getEmployeeData(){
-            let params={role:"employee",akName:keywords};
-            httpUtil.get("/api/user/list",{params:params}).then(function(response){
-                if(response && currentKeywords===keywords){
-                    console.log(response.list);
+            let params={role:"employee,manager"};
+            HttpUtil.get("/api/user/list",{params:params}).then(function(response){
+                if(response){
                     func(response.list);
                 }
             });
         }
         timeout = setTimeout(getEmployeeData,300);
+    }
+    /**
+     * 获取网点列表
+     */
+    branchList = (func) => {
+        if(timeout){
+            clearTimeout(timeout);
+            timeout = null;
+        }
+        function getBranchData(){
+            HttpUtil.get("/api/branch/list").then(function(response){
+                if(response){
+                    func(response.list);
+                }
+            });
+        }
+        timeout = setTimeout(getBranchData,300);
+    }
+    /**
+     * 获取网点工程师列表
+     */
+    enginnerList = (branchId,func) => {
+        if(timeout){
+            clearTimeout(timeout);
+            timeout = null;
+        }
+        function getEnginnerData(){
+            const params = {branchId:branchId};
+            HttpUtil.get("/api/user/listByBranch",{params:params}).then(function(response){
+                if(response){
+                    func(response.list);
+                }
+            });
+        }
+        timeout = setTimeout(getEnginnerData,300);
     }
 }
 export default new ChSearch();

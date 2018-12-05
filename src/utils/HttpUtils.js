@@ -23,14 +23,14 @@ axiosService.interceptors.response.use(
     response => {        
         var resultData = null;
         if(response.data!==undefined){
-            resultData = response.data;
+            resultData = response.data;            
         }
         if(resultData !== null){
             if(resultData.code!==200){
                 Message.warning(resultData.msg);
                 return;
-            }
-            if(resultData.data!==undefined && resultData!=null){
+            }            
+            if(resultData.data!==undefined && resultData.data!==null){
                 return resultData.data;
             }
             return {};
@@ -47,4 +47,5 @@ axiosService.interceptors.response.use(
         Message.error(errMsg);
     }
 );
+
 export default axiosService;

@@ -6,6 +6,7 @@ import { Layout, Menu, Icon } from 'antd';
 import webUtil from '../utils/WebUtils';
 import httpUtil from '../utils/HttpUtils';
 import OrderList from './orders/OrderList';
+import OrderManagerList from './orders/OrderManagerList';
 import CreateOrder from './orders/CreateOrder';
 import EditOrder from './orders/EditOrder';
 import ViewOrder from './orders/ViewOrder';
@@ -59,12 +60,16 @@ class MainPage extends React.Component {
         const base = this;
         httpUtil.get("/api/user/my/info").then(function(response){
             window.config.user = response.user;
+            let OrderListRoute = <Route path="/dash/order" exact component={OrderList} />;
+            if(window.config.user.role==='manager' || window.config.user.role==='employee'){
+                OrderListRoute = <Route path="/dash/order" exact component={OrderManagerList} />;
+            }
             base.setState({
                 routes:<Content>                          
                 <Route path="/" exact component={OrderList} />
                 <Route path="/dash" exact component={OrderList} />
-                <Route path="/dash/order" exact component={OrderList} />
-                <Route path="/dash/order/create" exact component={CreateOrder} />                
+                {OrderListRoute}
+                <Route path="/dash/order/create" component={CreateOrder} /> 
                 <Route path="/dash/order/view/:id" component={ViewOrder} />             
                 <Route path="/dash/order/edit/:id" component={EditOrder} />  
                 </Content>

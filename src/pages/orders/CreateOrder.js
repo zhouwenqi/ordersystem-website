@@ -6,11 +6,11 @@ import {
      Cascader, DatePicker,Col,Modal,
      TimePicker,Select,InputNumber
 } from 'antd';
-import moment from 'moment';
-import areaData from '../../common/AreaData';
-import orderType from '../../common/OrderType';
-import httpUtil from '../../utils/HttpUtils';
-import chSearch from '../../components/ChSearch';
+import Moment from 'moment';
+import AreaData from '../../common/AreaData';
+import OrderType from '../../common/OrderType';
+import HttpUtils from '../../utils/HttpUtils';
+import ChSearch from '../../components/ChSearch';
 import BasePage from '../BasePage';
 import './order.css';
 import WebUtils from '../../utils/WebUtils';
@@ -81,16 +81,15 @@ class CreateOrderForm extends BasePage {
             data.area = data.areas[2];
         }
         // 设置授理时间
-        data.acceptDate = moment().format("YYYY-MM-DD");
+        data.acceptDate = Moment().format("YYYY-MM-DD");
 
         
         this.setState({
             loading:true,
-            customerData:[],
         });
 
         var base = this;
-        httpUtil.post("/api/order/create",data).then(function(response){            
+        HttpUtils.post("/api/order/create",data).then(function(response){            
             base.setState({
                 loading:false
             });
@@ -118,7 +117,7 @@ class CreateOrderForm extends BasePage {
      */
     handlerSearchCustomer = (keywords)=>{
         let base = this;
-        chSearch.customerList(keywords,function(data){
+        ChSearch.customerList(keywords,function(data){
             console.log("data:",data);
             base.setState({customerData:data})
         });
@@ -127,7 +126,7 @@ class CreateOrderForm extends BasePage {
     render = ()=> {
         const {getFieldDecorator} = this.props.form;
         const orderTypes = [];
-        orderType.map((item,index)=>{            
+        OrderType.map((item,index)=>{            
             orderTypes.push(<Option key={index} value={item.value}>{item.label}</Option>);
         });
 
@@ -147,7 +146,7 @@ class CreateOrderForm extends BasePage {
                 </FormItem>                    
             </Col>                            
         </Row>
-        if(user.role==='管理员' || user.role==='内部人员'){
+        if(user.role==='manager' || user.role==='employee'){
             CustomerSelect = <Row>
                 <Col span={24}>
                     <FormItem {...formItemLayout}
@@ -164,8 +163,8 @@ class CreateOrderForm extends BasePage {
         return (
         <Spin  spinning={this.state.loading}>
             <div className="grid-form">
-                <Tabs>
-                    <TabPane tab="订单基本信息" key="basic-info">
+                <Tabs type="card">
+                    <TabPane tab="订单信息" key="basic-info">
                         <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>                        
                             <Row>
                                 <Col span={12}>
@@ -238,7 +237,7 @@ class CreateOrderForm extends BasePage {
                                                 label="省/市/区">
                                                 {getFieldDecorator('areas',
                                                 {rules:[{required:true,message:'请选择市'}]
-                                                })(<Cascader changeOnSelect={true} options={areaData} placeholder="请选择" />)} 
+                                                })(<Cascader changeOnSelect={true} options={AreaData} placeholder="请选择" />)} 
                                             </FormItem>                     
                                         </Col>
                                     </Row>
@@ -251,7 +250,17 @@ class CreateOrderForm extends BasePage {
                                                 })(<Input type="text" placeholder="请填写安装地址" />)} 
                                             </FormItem>                    
                                         </Col>
-                                    </Row>  
+                                    </Row> 
+                                    <Row>
+                                        <Col span={24}>
+                                            <FormItem {...formItemLayout}
+                                                label="安装路数">
+                                                {getFieldDecorator('routeQuantity',
+                                                {rules:[{required:true,message:'安装路数0-500'}],initialValue:0
+                                                })(<InputNumber min={0} max={500} precision={0} />)} 
+                                            </FormItem>
+                                        </Col>
+                                    </Row> 
                                     <Row>
                                         <Col span={24}>
                                             <FormItem {...btnItemLayout}>
@@ -266,7 +275,7 @@ class CreateOrderForm extends BasePage {
                                             <FormItem {...formItemLayout}
                                                 label="受理日期">
                                                 {getFieldDecorator('acceptDate',
-                                                {rules:[{required:true,message:'请选择受理日期'}],initialValue:moment(new Date(),"YYYY-MM-DD")
+                                                {rules:[{required:true,message:'请选择受理日期'}],initialValue:Moment(new Date(),"YYYY-MM-DD")
                                                 })(<DatePicker disabled placeholder="选择受理日期" />)} 
                                             </FormItem>                    
                                         </Col>

@@ -9,28 +9,30 @@ const WebUtils = {
     getOrderStatusColor:(orderStatus)=>{
         let statusColor = "#999999";
         switch (orderStatus) {
-            case "待派单":
+            case "pending":
             default:
                 statusColor = "#f59e21";
                 break;        
-            case "跟进中":
+            case "ongoing":
                 statusColor = "#1890ff";
                 break;
-            case "待验收":
+            case "waitCheck":
                 statusColor = "#bc15aa";
                 break;
-            case "已完结":
+            case "complete":
                 statusColor = "#19bc15";
                 break;
-            case "已取消":
+            case "cancel":
                 statusColor = "#eeeeee";
                 break;
         }
         return statusColor;
     },
     getReaplceChar:(text)=>{
-        text = text.replace(/\r/g,"&nbsp;");
-        text = text.replace(/\n/g,"<br />");
+        if(text){
+            text = text.replace(/\r/g,"&nbsp;");
+            text = text.replace(/\n/g,"<br />");
+        }        
         return text;
     },
     getSelectCustomerName:(user)=>{
@@ -42,6 +44,24 @@ const WebUtils = {
         }
         let customerName = company+" - "+user.uid;
         return customerName;
+    },
+    getEnumValue:(enumHash,tag)=>{
+        let enumValue = undefined;
+        enumHash.map((item,index)=>{
+            if(item.label===tag){
+                enumValue = item.value;
+            }
+        });
+        return enumValue;
+    },
+    getEnumTag:(enumHash,value)=>{
+        let enumTag = undefined;
+        enumHash.map((item,index)=>{            
+            if(item.value === value){
+                enumTag = item.label;
+            }
+        });
+        return enumTag;
     }
 }
 export default WebUtils;
