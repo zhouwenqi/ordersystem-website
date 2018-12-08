@@ -99,7 +99,7 @@ class OrderListForm extends BasePage {
                 });
             },
             onCancel() {},
-          });
+        });
         
     }
     /**
