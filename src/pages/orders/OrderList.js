@@ -28,6 +28,7 @@ class OrderListForm extends BasePage {
                 sortDirection:"desc"
             },       
             dataSource:[],
+            excelUrl:undefined,
             loading:false
         };
     }
@@ -46,7 +47,6 @@ class OrderListForm extends BasePage {
      */
     getOrderType=(record)=>{        
         const orderType = WebUtils.getEnumTag(OrderType,record.orderType);
-        console.log("orderType:"+orderType);
         return (<label>{orderType}</label>);
     }
 
@@ -93,7 +93,6 @@ class OrderListForm extends BasePage {
             onOk() {
                 var params = {id:id};
                 HttpUtils.delete("/api/order/delete",{params:params}).then(function(response){
-                    console.log("data",response);
                     if(response){
                         var items = base.state.dataSource;                        
                         for(var i=0;i<items.length;i++){                            
@@ -136,13 +135,27 @@ class OrderListForm extends BasePage {
     }
 
     /**
+     * 导出excel
+     */
+    onExportExcel=(e)=>{
+        var pagination = {...this.state.pageInfo};
+        pagination.pageNumber = 1;
+        pagination.pageSize = null;
+        let url = window.config.apiUrl+"/api/order/export?rand="+Math.random()*0.01+"&"+WebUtils.getUrlArgs(pagination);        
+        url+="&ch-token="+window.config.token;
+        console.log("url",url);
+        this.setState({
+            excelUrl:url
+        })
+    }
+
+    /**
      * 切换页码
      */
     handleTableChange=(pagination,filters,sorter) => {        
         var pager = {...this.state.pageInfo};
         pager.current = pagination.current;
         pager.pageNumber = pagination.current;
-        console.log("sorter",sorter);
         if(sorter.field){
             pager.sortDirection = sorter.order.replace("end","");
             pager.sortField = WebUtils.getHumpString(sorter.field);
@@ -169,6 +182,7 @@ class OrderListForm extends BasePage {
                 var pagination = {...base.state.pageInfo};
                 pagination.searchProperty = values.searchProperty;
                 pagination.searchValue = values.searchValue;
+                pagination.pageNumber = 1
                 base.setState({
                     pageInfo:pagination
                 });
@@ -198,14 +212,14 @@ class OrderListForm extends BasePage {
         const beforeSearchKeys = getFieldDecorator("searchProperty",{initialValue:"sn"})(
          <Select>
             <Option value="sn">订单号</Option>
-            <Option value="uid">帐号</Option>
             <Option value="consumer_name">客户名称</Option>
             <Option value="consumer_contact">客户联系人</Option>
             <Option value="consumer_phone">联系电话</Option>
         </Select>);
 
         return (
-            <div className='grid-box'>        
+            <div className='grid-box'>
+                <iframe src={this.state.excelUrl} />
                 <Form onSubmit={this.handleSubmit}>
                     <Row style={{margin:"0px 0px 10px 0px"}}>
                         <Col span={6}>
@@ -218,12 +232,13 @@ class OrderListForm extends BasePage {
                             </InputGroup>
                         </Col>
                         <Col style={{textAlign:"right"}} offset={12} span={6}>                        
-                            <Button icon="file-excel">导出Excel</Button>
+                            <Button onClick={this.onExportExcel} icon="file-excel">导出Excel</Button>
                         </Col>
                     </Row>
                 </Form>
                 <Table footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} onRow={this.onRowClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
-            </div>);
+            </div>
+        );
     }
 }
 const OrderList = Form.create()(OrderListForm);

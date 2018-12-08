@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 import { 
     Form, Input,Tabs, Button,Spin,
      Icon, Row, Message, Checkbox,
-     Cascader, DatePicker,Col,Modal,Divider,
-     TimePicker,Select,InputNumber,Breadcrumb
+     Cascader, DatePicker,Col,Modal,
+     Select,InputNumber,Breadcrumb
 } from 'antd';
 import Moment from 'moment';
 import AreaData from '../../common/AreaData';
@@ -19,12 +19,14 @@ import axios from 'axios';
 import './order.css';
 import WebUtils from '../../utils/WebUtils';
 import ChSearch from '../../components/ChSearch';
+import OrderStatusFragment from '../../components/OrderStatusForm';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
 const TabPane = Tabs.TabPane;
 const {TextArea} = Input;
 const ButtonGroup = Button.Group;
+const Confirm = Modal.confirm;
 
 const formItemLayout = {
     labelCol: {
@@ -51,19 +53,26 @@ class EditOrderForm extends BasePage {
         trackData:[],
         branchData:[], 
         enginnerData:[],
+        orderEvents:[],
         currentBranch:undefined,          
         customerValue:undefined,
         currentEnginner:undefined,
+        isAdmin:false,
         isEdit:false,
         isNeedTraceUser:false,
         orderInfo:undefined,
         orderUserId:undefined,
+        isChecked:false,
+        isInvoice:false,
+        isRefunds:false,   
+        statusFrameShow:false,
+        loadingStatus:false,
     }
     static contextTypes = {
         menuRoute:PropTypes.func
     }    
     componentDidMount =() =>{        
-        this.getOrderInfo();               
+        this.getOrderInfo();        
     }
     
     /**
@@ -81,9 +90,11 @@ class EditOrderForm extends BasePage {
             const user = window.config.user;
             if(response){  
                 const orderInfo = response.order; 
+                let isAdmin = false;
                 let isOrderEdit = orderInfo.orderStatus === 'pending';
                 if(user.role==='manager' || user.role==='employee'){
                     isOrderEdit = true;
+                    isAdmin = true;
                 }                            
                 base.setState({                    
                     orderInfo:orderInfo,
@@ -91,7 +102,12 @@ class EditOrderForm extends BasePage {
                     orderUserId:orderInfo.orderUserId,
                     currentBranch:orderInfo.branch,
                     currentEnginner:orderInfo.enginnerUser,
+                    orderEvents:orderInfo.orderEvents,
                     isEdit:isOrderEdit,
+                    isAdmin:isAdmin,
+                    isChecked:orderInfo.isChecked,
+                    isInvoice:orderInfo.isInvoice,
+                    isRefunds:orderInfo.isRefunds,
                 });   
                 
                 if(user.role==='manager' || user.role==='employee'){                
@@ -146,6 +162,19 @@ class EditOrderForm extends BasePage {
         }
         if(data.areas.length>2){
             data.area = data.areas[2];
+        }
+
+        if(data.paymentTime){
+            data.paymentTime = data.paymentTime.format("YYYY-MM-DD");
+        }
+        if(data.checkedDate){
+            data.checkedDate = data.checkedDate.format("YYYY-MM-DD");
+        }
+        if(data.invoiceDate){
+            data.invoiceDate = data.invoiceDate.format("YYYY-MM-DD");
+        }
+        if(data.refundsDate){
+            data.refundsDate = data.refundsDate.format("YYYY-MM-DD");
         }
         
         data.id = this.props.match.params.id;        
@@ -238,6 +267,15 @@ class EditOrderForm extends BasePage {
     }
 
     /**
+     * 多选框选中事件
+     */
+    onChangeCheckbox=(e)=>{
+        const key = e.target.id
+        const status = !this.state[key];
+        this.setState({[key]:status});
+    }
+
+    /**
      * 获取网点工程师数据
      */
     getEnginnerList=(branchId)=>{
@@ -250,15 +288,91 @@ class EditOrderForm extends BasePage {
     }
 
     /**
+     * 添加订单状态事件
+     */
+    onAddEvent=()=>{
+        this.setState({
+            statusFrameShow:true,
+        })
+    }
+    /**
+     * 提交订单状态表单
+     */
+    onHandleCreate=()=>{
+        const statusForm = this.statusForm.props.form;
+        this.setState({
+            loadingStatus:true,
+        })
+        statusForm.validateFields((err, values) => {
+            if (err) {
+                return;
+            }
+            let data = {
+                orderId:this.state.orderInfo.id,
+                eventTime:values.eventTime.format("YYYY-MM-DD"),
+                description:values.description                
+            }
+            const base = this;
+            statusForm.resetFields();
+            HttpUtils.post("/api/order/event/create",data).then(function(response){
+                if(response){
+                    let orderEvents = base.state.orderEvents;
+                    orderEvents.unshift(response.orderEvent);
+                    base.setState({ statusFrameShow: false,loadingStatus:false, orderEvents:orderEvents});
+                }
+            });
+            
+        });
+
+    }
+    onHandleCancel=()=>{
+        this.setState({ statusFrameShow: false });
+    }
+
+    /**
+     * 删除订单状态（事件）
+     */
+    onRemoveEvent=(eventId)=>{
+        const base = this;
+        Confirm({
+            title: '删除此状态',
+            content: '确定要删除这条状态信息吗？',
+            onOk() {
+                var params = {id:eventId};
+                HttpUtils.delete("/api/order/event/delete",{params:params}).then(function(response){                    
+                    if(response){
+                        var items = base.state.orderEvents;                        
+                        for(var i=0;i<items.length;i++){                            
+                            if(items[i].id===eventId){
+                                items.splice(i,1);
+                            }
+                        }
+                        base.setState({
+                            orderEvents:items,
+                        })
+                    }
+                });
+            },
+            onCancel() {},
+        });
+    }
+    
+    getOrderStatusForm=(statusForm)=>{
+        this.statusForm = statusForm;
+    }
+
+
+    /**
      * 后退
      */
     onBack=()=>{
         window.history.back();
     }
 
-    render = ()=> {
+    render = ()=> {        
         const order = this.state.orderInfo;
         const {getFieldDecorator} = this.props.form;
+
 
         // 设置订单类型下拉框数据
         let orderTypes = [];
@@ -302,6 +416,18 @@ class EditOrderForm extends BasePage {
             enginner = this.state.currentEnginner;
         }
 
+        // 设置请款状态
+        let orderPaymentStatus = [];
+        PaymentStatus.map((item,index)=>{
+            orderPaymentStatus.push(<Option key={index} value={item.value}>{item.label}</Option>);
+        });
+
+        // 设置付款方式
+        let orderPaymentMethods = [];
+        PaymentMethod.map((item,index)=>{
+            orderPaymentMethods.push(<Option key={index} value={item.value}>{item.label}</Option>);
+        });
+
         // 读取当前登录用户信息
         const user = window.config.user;        
         let CustomerSelect = <Row>
@@ -314,37 +440,34 @@ class EditOrderForm extends BasePage {
                 </FormItem>                    
             </Col>                            
         </Row>
+
+        let deleteBtn = <Button icon="undo" title="取消" onClick={this.onBack}></Button>;
+        if(this.state.isAdmin){
+            deleteBtn = <Button icon="delete" title="删除" onClick={this.onBack}></Button>
+        }
         
         // Tabs 扩展Button  
         const extOperations = (
             <ButtonGroup>
-                <Button icon="left" onClick={this.onBack}></Button>
-                <Button loading={this.state.loading} icon="save" htmlType="submit">保存订单</Button>
+                <Button icon="left" title="返回" onClick={this.onBack}></Button>                
+                {deleteBtn}
+                <Button loading={this.state.loading} title="保存" icon="save" htmlType="submit">保存订单</Button>
             </ButtonGroup>
         )
 
         // 编辑表单内容
         let editContent = undefined;        
         if(order){
-            // 只有管理员或内部人员才能编辑订单详情
+            // 订单详情
             let TabPaneMore = undefined;     
-            let TabPanePayment = undefined;   
+            // 订单帐号信息
+            let TabPanePayment = undefined;
+            // 订单实时状态
+            let TabPaneEvent = undefined;
             if(user.role==='manager' || user.role==='employee'){
                 TabPaneMore = <TabPane tab="详细信息" key="more-info">
                     <Row>
-                        <Col span={12}>
-                            <Row>
-                                <Col span={24}>
-                                    <FormItem {...formItemLayout}
-                                        label="订单状态">
-                                        {getFieldDecorator('orderStatus',
-                                        {rules:[{required:true,message:'请选择订单状态',}],initialValue:order.orderStatus
-                                        })(<Select onSelect={this.onSelectOrderStatus}>
-                                            {orderStatus}
-                                        </Select>)} 
-                                    </FormItem>                    
-                                </Col>
-                            </Row>
+                        <Col span={12}>                            
                             <Row>
                                 <Col span={24}>
                                     <FormItem {...formItemLayout}
@@ -411,7 +534,6 @@ class EditOrderForm extends BasePage {
                                     </FormItem>                    
                                 </Col>
                             </Row> 
-
                         </Col>
                         <Col span={12}>
                             <Row>
@@ -556,19 +678,156 @@ class EditOrderForm extends BasePage {
                                     <FormItem {...formItemLayout}
                                         label="请款状态">
                                         {getFieldDecorator('paymentStatus',
-                                        {rules:[{required:true,message:'请选择订单类型',}],initialValue:order.paymentStatus
-                                        })(<Select placeholder="请选择订单类型">
-                                            {orderTypes}
+                                        {rules:[{required:false}],initialValue:order.paymentStatus
+                                        })(<Select placeholder="请选择请款状态">
+                                            {orderPaymentStatus}
+                                        </Select>)} 
+                                    </FormItem>                    
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={24}>
+                                    <FormItem {...formItemLayout}
+                                        label="财务付款日期">
+                                        {getFieldDecorator('paymentTime',
+                                        {rules:[{required:false}],initialValue:order.paymentTime?Moment(order.paymentTime,"YYYY-MM-DD"):null
+                                        })(<DatePicker placeholder="选择财务付款日期" />)} 
+                                    </FormItem>                    
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={24}>
+                                    <FormItem {...formItemLayout}
+                                        label="备注">
+                                        {getFieldDecorator('memo',
+                                        {rules:[{required:false}],initialValue:order.memo
+                                        })(<TextArea type="textarea" rows={10} />)} 
+                                    </FormItem>                    
+                                </Col>
+                            </Row>
+                        </Col>
+                        <Col span={12}>
+                            <Row>
+                                <Col span={24}>
+                                    <FormItem {...formItemLayout}
+                                        label="付款方式">
+                                        {getFieldDecorator('paymentMethod',
+                                        {rules:[{required:false}],initialValue:order.paymentMethod
+                                        })(<Select placeholder="请选择付款方式">
+                                            {orderPaymentMethods}
                                         </Select>)} 
                                     </FormItem>                    
                                 </Col>
                             </Row>
                         </Col>
                         <Col span={12}>
+                            <Row>
+                                <Col span={24}>
+                                    <FormItem {...formItemLayout}
+                                        label="是否已对帐">
+                                        {getFieldDecorator('isChecked',
+                                        {rules:[{required:false}],initialValue:this.state.isChecked
+                                        })(<Checkbox checked={this.state.isChecked} onChange={this.onChangeCheckbox} placeholder="是否已对帐" />)} 
+                                    </FormItem>                    
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={24}>
+                                    <FormItem {...formItemLayout}
+                                        label="对帐时间">
+                                        {getFieldDecorator('checkedDate',
+                                        {rules:[{required:false}],initialValue:order.checkedDate?Moment(order.checkedDate,"YYYY-MM-DD"):null
+                                        })(<DatePicker placeholder="选择对帐时间" />)} 
+                                    </FormItem>                    
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={24}>
+                                    <FormItem {...formItemLayout}
+                                        label="是否已开票">
+                                        {getFieldDecorator('isInvoice',
+                                        {rules:[{required:false}],initialValue:this.state.isInvoice
+                                        })(<Checkbox checked={this.state.isInvoice} onChange={this.onChangeCheckbox} placeholder="是否已开票" />)} 
+                                    </FormItem>                    
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={24}>
+                                    <FormItem {...formItemLayout}
+                                        label="开票时间">
+                                        {getFieldDecorator('invoiceDate',
+                                        {rules:[{required:false}],initialValue:order.invoiceDate?Moment(order.invoiceDate,"YYYY-MM-DD"):null
+                                        })(<DatePicker placeholder="选择开票时间" />)} 
+                                    </FormItem>                    
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={24}>
+                                    <FormItem {...formItemLayout}
+                                        label="是否已回款">
+                                        {getFieldDecorator('isRefunds',
+                                        {rules:[{required:false}],initialValue:this.state.isRefunds
+                                        })(<Checkbox checked={this.state.isRefunds} onChange={this.onChangeCheckbox} placeholder="是否已回款" />)} 
+                                    </FormItem>                    
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={24}>
+                                    <FormItem {...formItemLayout}
+                                        label="回款时间">
+                                        {getFieldDecorator('refundsDate',
+                                        {rules:[{required:false}],initialValue:order.refundsDate?Moment(order.refundsDate,"YYYY-MM-DD"):null
+                                        })(<DatePicker placeholder="选择回款时间" />)} 
+                                    </FormItem>                    
+                                </Col>
+                            </Row>
                         </Col>
                     </Row>
                 </TabPane>
             }
+            let OrderEvents = [];
+            if(this.state.orderEvents.length>0){
+                this.state.orderEvents.map((item,index)=>{
+                    OrderEvents.push(
+                        <tr key={index}>
+                            <td>{item.orderSn}</td>
+                            <td>{item.realName}({item.uid})</td>
+                            <td>{item.description}</td>
+                            <td>{Moment(item.eventTime).format("YYYY-MM-DD")}</td>
+                            <td><a className="item-a delete" onClick={this.onRemoveEvent.bind(this,item.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a></td>
+                        </tr>
+                    )
+                });
+            }else{
+                OrderEvents.push(
+                    <tr key="0">
+                        <td colSpan="5" style={{padding:"20px",textAlign:"center"}}>没有相关动态</td>
+                    </tr>
+                )
+
+            }
+
+            TabPaneEvent = <TabPane tab="实时状态" key="event-info">
+                <div className="view-box">   
+                    <Button onClick={this.onAddEvent.bind(this)} style={{marginBottom:"10px"}} icon="plus">添加状态</Button>                 
+                    <OrderStatusFragment wrappedComponentRef={this.getOrderStatusForm.bind(this)} loadingStatus={this.state.loadingStatus} visible={this.state.statusFrameShow} onCancel={this.onHandleCancel} onCreate={this.onHandleCreate} />
+                    <table className="view-table">
+                        <thead>
+                            <tr>
+                                <td style={{width:"200px"}}>订单编号</td>
+                                <td style={{width:"200px"}}>帐号</td>
+                                <td>状态描述</td>
+                                <td style={{width:"200px"}}>时间</td>
+                                <td style={{width:"80px"}}>操作</td>
+                            </tr> 
+                        </thead>
+                        <tbody>
+                            {OrderEvents}
+                        </tbody>
+                    </table>
+                </div>
+            </TabPane>
+
             editContent = (<div className="grid-form">
             <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>
                 <Tabs tabBarExtraContent={extOperations} type="card">
@@ -679,7 +938,19 @@ class EditOrderForm extends BasePage {
                                             })(<Input disabled />)} 
                                         </FormItem>
                                     </Col>
-                                </Row>                    
+                                </Row> 
+                                <Row>
+                                    <Col span={24}>
+                                        <FormItem {...formItemLayout}
+                                            label="订单状态">
+                                            {getFieldDecorator('orderStatus',
+                                            {rules:[{required:true,message:'请选择订单状态',}],initialValue:order.orderStatus
+                                            })(<Select disabled={!this.state.isAdmin} onSelect={this.onSelectOrderStatus}>
+                                                {orderStatus}
+                                            </Select>)} 
+                                        </FormItem>                    
+                                    </Col>
+                                </Row>                   
                                 <Row>
                                     <Col span={24}>
                                         <FormItem {...formItemLayout}
@@ -705,6 +976,7 @@ class EditOrderForm extends BasePage {
                     </TabPane>
                     {TabPaneMore}
                     {TabPanePayment}
+                    {TabPaneEvent}
                 </Tabs>                
             </Form>
             </div>);

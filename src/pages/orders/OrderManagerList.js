@@ -5,10 +5,11 @@ import HttpUtils from '../../utils/HttpUtils';
 import WebUtils from '../../utils/WebUtils';
 import moment from 'moment';
 import BasePage from '../BasePage';
+import OrderType from '../../common/OrderType';
+import OrderStatusDropDown from '../../components/OrderStatusDropDown';
 
 import './order.css';
-import OrderType from '../../common/OrderType';
-import OrderStatus from '../../common/OrderStatus';
+
 const Confirm = Modal.confirm;
 const Search = Input.Search;
 const InputGroup = Input.Group;
@@ -29,32 +30,16 @@ class OrderListForm extends BasePage {
                 sortDirection:"desc"
             },       
             dataSource:[],
+            excelUrl:undefined,
             loading:false
         };
-    }
-
-    /**
-     * 返回列表中的订单状态
-     */
-    getOrderStatusSetup=(record)=>{
-        const subMenu = <Menu>
-            <Menu.Item>待派单</Menu.Item>
-            <Menu.Item>更进中</Menu.Item>
-            <Menu.Item>待验收</Menu.Item>
-            <Menu.Item>已完结</Menu.Item>
-            <Menu.Item>已取消</Menu.Item>
-        </Menu>
-        let statusColor = WebUtils.getOrderStatusColor(record.orderStatus);
-        const orderStatus = WebUtils.getEnumTag(OrderStatus,record.orderStatus);
-        return (<Dropdown overlay={subMenu}><Row><label color={statusColor} style={{cursor:"pointer",color:statusColor}}>{orderStatus}</label><Icon type="down" style={{marginLeft:"4px"}} /></Row></Dropdown>);
-    }
+    }   
 
     /**
      * 返回列表中的订单类型
      */
     getOrderType=(record)=>{        
         const orderType = WebUtils.getEnumTag(OrderType,record.orderType);
-        console.log("orderType:"+orderType);
         return (<label>{orderType}</label>);
     }
 
@@ -82,7 +67,7 @@ class OrderListForm extends BasePage {
             {title:'地区',sorter: true,dataIndex:'area'},
             {title:'派单时间',sorter: true,dataIndex:'assignDate',render:(text)=>(moment(text).format("YYYY-MM-DD"))},
             {title:'创建时间',sorter: true,dataIndex:'createDate',defaultSortOrder: 'descend'},
-            {title:'状态',dataIndex:'orderStatus',render:(id,record)=>(this.getOrderStatusSetup(record))},
+            {title:'状态',dataIndex:'orderStatus',render:(id,record)=>(<OrderStatusDropDown orderInfo={record} />)},
             {title:'操作',dataIndex:'',render:(id,record)=>(this.getOperationMenus(record))},
         ];
     }
@@ -99,8 +84,7 @@ class OrderListForm extends BasePage {
             content: '确定要删除这张订单吗？',
             onOk() {
                 var params = {id:id};
-                HttpUtils.delete("/api/order/delete",{params:params}).then(function(response){
-                    console.log("data",response);
+                HttpUtils.delete("/api/order/delete",{params:params}).then(function(response){                    
                     if(response){
                         var items = base.state.dataSource;                        
                         for(var i=0;i<items.length;i++){                            
@@ -140,6 +124,21 @@ class OrderListForm extends BasePage {
                 })
             }
         });
+    }    
+
+    /**
+     * 导出excel
+     */
+    onExportExcel=(e)=>{
+        var pagination = {...this.state.pageInfo};
+        pagination.pageNumber = 1;
+        pagination.pageSize = null;
+        let url = window.config.apiUrl+"/api/order/export?rand="+Math.random()*0.01+"&"+WebUtils.getUrlArgs(pagination);        
+        url+="&ch-token="+window.config.token;
+        console.log("url",url);
+        this.setState({
+            excelUrl:url
+        })
     }
 
     /**
@@ -149,7 +148,6 @@ class OrderListForm extends BasePage {
         var pager = {...this.state.pageInfo};
         pager.current = pagination.current;
         pager.pageNumber = pagination.current;
-        console.log("sorter",sorter);
         if(sorter.field){
             pager.sortDirection = sorter.order.replace("end","");
             pager.sortField = WebUtils.getHumpString(sorter.field);
@@ -176,6 +174,7 @@ class OrderListForm extends BasePage {
                 var pagination = {...base.state.pageInfo};
                 pagination.searchProperty = values.searchProperty;
                 pagination.searchValue = values.searchValue;
+                pagination.pageNumber = 1;
                 base.setState({
                     pageInfo:pagination
                 });
@@ -203,33 +202,43 @@ class OrderListForm extends BasePage {
     render=()=>{
         const {getFieldDecorator} = this.props.form;        
         const beforeSearchKeys = getFieldDecorator("searchProperty",{initialValue:"sn"})(
-         <Select>
+         <Select style={{minWidth:"120px"}}>
             <Option value="sn">订单号</Option>
             <Option value="uid">帐号</Option>
             <Option value="consumer_name">客户名称</Option>
             <Option value="consumer_contact">客户联系人</Option>
             <Option value="consumer_phone">联系电话</Option>
+            <Option value="service_content">服务内容</Option>
+            <Option value="requirement">订单要求</Option>
         </Select>);
 
+        const locale = {
+            filterTitle: '筛选',
+            filterConfirm: '确定',
+            filterReset: '重置',
+            emptyText: '没有找到相关订单信息',
+        }
+
         return (
-            <div className='grid-box'>        
+            <div className='grid-box'>      
+                <iframe src={this.state.excelUrl} />  
                 <Form onSubmit={this.handleSubmit}>
-                    <Row style={{margin:"0px 0px 10px 0px"}}>
-                        <Col span={6}>
+                    <Row style={{margin:"0px 0px 10px 0px"}}>                  
+                        <Col span={8}>                                                           
                             <InputGroup>
                             {getFieldDecorator('searchValue',
                                 {rules:[{required:false}]
                                 })(                          
                                     <Search onSearch={this.handleSubmit} addonBefore={beforeSearchKeys} enterButton placeholder="请输入查询关键词" />
                                 )}
-                            </InputGroup>
+                            </InputGroup>                            
                         </Col>
-                        <Col style={{textAlign:"right"}} offset={12} span={6}>                        
-                            <Button icon="file-excel">导出Excel</Button>
+                        <Col style={{textAlign:"right"}} offset={10} span={6}>                        
+                            <Button onClick={this.onExportExcel} icon="file-excel">导出Excel</Button>
                         </Col>
                     </Row>                
                 </Form>
-                <Table footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} onRow={this.onRowClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
+                <Table locale={locale} footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} onRow={this.onRowClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
             </div>);
     }
 }

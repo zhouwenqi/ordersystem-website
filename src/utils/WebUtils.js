@@ -45,6 +45,12 @@ const WebUtils = {
         let customerName = company+" - "+user.uid;
         return customerName;
     },
+    getViewUserName:(user)=>{
+        if(user){
+            return user.realName+"("+user.uid+")";
+        }
+        return undefined;
+    },
     getEnumValue:(enumHash,tag)=>{
         let enumValue = undefined;
         enumHash.map((item,index)=>{
@@ -62,6 +68,16 @@ const WebUtils = {
             }
         });
         return enumTag;
+    },
+    getUrlArgs:(data)=>{
+        var args = []
+        for(var key in data){
+            if(data[key]){
+                args.push(key+"="+data[key]);
+            }            
+        }
+        var argsUrl = args.join("&");
+        return argsUrl;
     }
 }
 export default WebUtils;

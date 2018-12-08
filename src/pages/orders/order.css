@@ -38,7 +38,7 @@
  * view 样式
  */
 .view-box{
-    padding:8px 14px;
+    padding:0px;
 }
 .view-box label{
     margin-right:10px;
@@ -46,6 +46,35 @@
 .view-box span{
     color:#999999;
 }
+.view-box span.num{
+    color:#f91959;
+}
 .view-box .ant-row{
     padding:6px 0px;
+}
+.view-box .view-table{
+    width:100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background-color: white;
+    border-top:solid #e5e5e5 1px;
+    border-left:solid #e5e5e5 1px;
+}
+.view-box .view-table td{
+    padding:6px 10px;
+    border-right:solid #e5e5e5 1px;
+    border-bottom:solid #e5e5e5 1px;
+    text-align: left;    
+}
+.view-box .view-table thead td{
+    background-color: #fbfbfb;
+}
+.view-box .view-table th{
+    padding:6px 10px;
+    border-right:solid #e5e5e5 1px;
+    border-bottom:solid #e5e5e5 1px;
+    text-align: right;
+    background-color: #fbfbfb;
+    font-weight:normal;
+    width:15%;
 }
