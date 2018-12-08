@@ -11,8 +11,6 @@ import {
     Button,
     Form
 } from 'antd';
-import WebUtils from '../utils/WebUtils';
-import HttpUtils from '../utils/HttpUtils';
 
 const FormItem = Form.Item;
 const {TextArea} = Input;

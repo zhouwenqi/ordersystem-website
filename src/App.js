@@ -8,7 +8,7 @@ import LogoutPage from './pages/LogoutPage';
 import './App.css';
 
 window.config = {
-  apiUrl:"http://192.168.3.83:9018"
+  apiUrl:"http://localhost:9018"
 };
 
 class App extends Component {

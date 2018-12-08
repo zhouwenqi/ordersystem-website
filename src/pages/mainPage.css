@@ -1,0 +1,28 @@
+.head-top-logo img{
+    height:40px;
+}
+.head-top-logo span{
+    color:rgba(255, 255, 255, 0.5);
+    margin-left: 40px;
+}
+.head-top-info{
+    color:white;
+}
+.head-top-info label{
+    margin:0px 10px;
+}
+.head-top-info span{
+    color: rgba(255,255,255,0.5);
+}
+.head-top-info span.slide{    
+    margin:0px 10px;
+}
+.head-top-info a{    
+    color:rgba(255,255,255,0.5);
+}
+.head-top-info a:hover{    
+    color:rgba(255,255,255,1);
+}
+.head-top-info a:active{    
+    color:rgba(255,255,255,0.5);
+}
