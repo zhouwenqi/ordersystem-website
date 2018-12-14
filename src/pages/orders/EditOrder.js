@@ -89,7 +89,7 @@ class EditOrderForm extends BasePage {
             {title:'关联订单', width:200,sorter: true,dataIndex:'orderSn'},
             {title:'上传用户',sorter: true,dataIndex:'uid'},
             {title:'下载次数', width:100,sorter: true,dataIndex:'uploadCount'},
-            {title:'上传时间',width:160,sorter: true,dataIndex:'createDate'},
+            {title:'上传时间',width:160,sorter: true,dataIndex:'createDate',defaultSortOrder: 'descend'},
             {title:'操作',width:100,render:(record)=>(this.getOperationMenus(record))}
         ];
     } 
@@ -97,13 +97,13 @@ class EditOrderForm extends BasePage {
         this.getOrderInfo();        
     }
     getFileNameCell(text,record){
-        return (<a href="javascript:;" onClick={this.onDownloadFile.bind(this,record.path)}>{text}</a>);
+        return (<a href="javascript:;" onClick={this.onDownloadFile.bind(this,record.id)}>{text}</a>);
     }
     /**
      * 返回列表中的操作按钮
      */
     getOperationMenus=(record)=>{
-        let downBtn = <a className="item-a edit" onClick={this.onDownloadFile.bind(this,record.path)} href="javascript:;" title="下载"><Icon type="cloud-download" theme="outlined" /></a>;        
+        let downBtn = <a className="item-a edit" onClick={this.onDownloadFile.bind(this,record.id)} href="javascript:;" title="下载"><Icon type="cloud-download" theme="outlined" /></a>;        
         let deleteBtn = <a className="item-a delete" onClick={this.onDeleteFile.bind(this,record.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>;
         return (<Row>{downBtn}{deleteBtn}</Row>);
     }
@@ -184,7 +184,7 @@ class EditOrderForm extends BasePage {
                             base.getEnginnerList(orderInfo.branchId);
                         }
                         // 获取订单关联文件
-                        base.searchFile();
+                        base.searchFile(base.state.pageInfo);
                         
                     }));          
                 }
@@ -240,9 +240,9 @@ class EditOrderForm extends BasePage {
     /**
      * 下载文件
      */
-    onDownloadFile=(path)=>{
+    onDownloadFile=(fileId)=>{
         let url = window.config.apiUrl;
-        url += path + "?rnd="+Math.random()*0.01;
+        url += "/api/order/file/download?ch-token="+window.config.token+"&fileId="+fileId+"&rnd="+Math.random()*0.01;
         console.log(url);
         this.setState({
             downloadUrl:url
@@ -260,7 +260,7 @@ class EditOrderForm extends BasePage {
                 const data = {id:fileId};
                 const base = this;
                 HttpUtils.post('/api/order/file/delete',data).then(function(response){
-                    base.searchFile();
+                    base.searchFile(base.state.pageInfo);
                 });
             },
             onCancel:()=>{
@@ -1174,7 +1174,7 @@ class EditOrderForm extends BasePage {
             </div>);
         }
         return (        
-        <div>
+        <Spin spinning={this.state.loading}>
             <Breadcrumb style={{marginTop:"10px"}}>
                 <Breadcrumb.Item>控制台</Breadcrumb.Item>
                 <Breadcrumb.Item>我的订单</Breadcrumb.Item>
@@ -1183,7 +1183,7 @@ class EditOrderForm extends BasePage {
             </Breadcrumb>
             <iframe src={this.state.downloadUrl} /> 
             {editContent}
-        </div>
+        </Spin>
         );
     }  
 }

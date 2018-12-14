@@ -54,12 +54,11 @@ class ViewOrder extends BasePage {
      * 返回列表中的操作按钮
      */
     getOperationMenus=(record)=>{
-        let downBtn = <a className="item-a edit" href="javascript:;" title="下载"><Icon type="cloud-download" theme="outlined" /></a>;        
+        let downBtn = <a className="item-a edit" onClick={this.onDownloadFile.bind(this,record.id)} href="javascript:;" title="下载"><Icon type="cloud-download" theme="outlined" /></a>;        
         return (<Row>{downBtn}</Row>);
     }
     getFileNameCell(text,record){
-        console.log(record);
-        return (<a href={record.path}>{text}</a>);
+        return (<a href="javascript:;" onClick={this.onDownloadFile.bind(this,record.id)}>{text}</a>);
     }
     /**
      * 请求接口获取订单信息
@@ -87,13 +86,25 @@ class ViewOrder extends BasePage {
                     isEdit:isOrderEdit,
                     isAdmin:isAdmin         
                 });
-                base.searchFile();
+                base.searchFile(base.state.pageInfo);
             }else{
                 base.setState({
                     loading:false
                 });
             }            
         });
+    }
+
+    /**
+     * 下载文件
+     */
+    onDownloadFile=(fileId)=>{
+        let url = window.config.apiUrl;
+        url += "/api/order/file/download?ch-token="+window.config.token+"&fileId="+fileId+"&rnd="+Math.random()*0.01;
+        console.log(url);
+        this.setState({
+            downloadUrl:url
+        })
     }
 
     /**
@@ -428,6 +439,7 @@ class ViewOrder extends BasePage {
                     <Breadcrumb.Item><Link to="/dash/order">订单列表</Link></Breadcrumb.Item>
                     <Breadcrumb.Item>查看订单</Breadcrumb.Item>
                 </Breadcrumb>
+                <iframe src={this.state.downloadUrl} /> 
                 {viewContent}   
             </Spin>
         );

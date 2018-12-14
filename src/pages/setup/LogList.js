@@ -54,7 +54,7 @@ class LogListForm extends React.Component{
         ];
     }
     componentDidMount = ()=>{
-        this.searchLog();
+        this.searchLog(this.state.pageInfo);
     }    
     /**
      * 查询用户
