@@ -76,7 +76,7 @@ class OrderListForm extends BasePage {
             {title:'派单时间',sorter: true,dataIndex:'assignDate',render:(text)=>(moment(text).format("YYYY-MM-DD"))},
             {title:'创建时间',sorter: true,dataIndex:'createDate',defaultSortOrder: 'descend'},
             {title:'状态',dataIndex:'orderStatus',render:(id,record)=>(this.getOrderStatusSetup(record))},
-            {title:'操作',dataIndex:'',render:(id,record)=>(this.getOperationMenus(record))},
+            {title:'操作',width:90,render:(id,record)=>(this.getOperationMenus(record))},
         ];
     }
     componentDidMount = ()=>{
@@ -143,7 +143,6 @@ class OrderListForm extends BasePage {
         pagination.pageSize = null;
         let url = window.config.apiUrl+"/api/order/export?rand="+Math.random()*0.01+"&"+WebUtils.getUrlArgs(pagination);        
         url+="&ch-token="+window.config.token;
-        console.log("url",url);
         this.setState({
             excelUrl:url
         })

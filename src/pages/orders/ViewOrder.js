@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Spin, Tabs, Message, Timeline, Col,Row,Button,Breadcrumb } from 'antd';
+import { Spin, Tabs, Message, Icon, Col,Row,Button,Breadcrumb, Table } from 'antd';
 import Moment from 'moment';
 import OrderType from '../../common/OrderType';
 import OrderStatus from '../../common/OrderStatus';
@@ -9,6 +9,7 @@ import PaymentMethod from '../../common/PaymentMethod';
 import httpUtils from '../../utils/HttpUtils';
 import BasePage from '../BasePage';
 import WebUtils from '../../utils/WebUtils';
+import HttpUtils from '../../utils/HttpUtils';
 
 const TabPane = Tabs.TabPane;
 const ButtonGroup = Button.Group;
@@ -22,11 +23,43 @@ class ViewOrder extends BasePage {
             loading:false,
             isEdit:false,
             isAdmin:false,
-            orderInfo:{}
+            orderInfo:{},
+            pageInfo:{
+                pageSize:20,
+                current:1,
+                total:0,
+                sortField:"create_date",
+                sortDirection:"desc",                
+            },       
+            dataSource:[],
         }
+    }
+    componentWillMount = () =>{
+        // 文件表格列头
+        this.dataColumns = [
+            {title:'文件名',sorter: true,dataIndex:'name',render:(text,render)=>(this.getFileNameCell(text,render))},
+            {title:'文件路径',sorter: true,dataIndex:'path'},
+            {title:'文件类型',sorter: true,dataIndex:'fileType'},
+            {title:'关联订单', width:200,sorter: true,dataIndex:'orderSn'},
+            {title:'上传用户',sorter: true,dataIndex:'uid'},
+            {title:'下载次数', width:100,sorter: true,dataIndex:'uploadCount'},
+            {title:'上传时间',width:160,sorter: true,dataIndex:'createDate'},
+            {title:'下载',width:60,render:(record)=>(this.getOperationMenus(record))}
+        ];
     }
     componentDidMount =() =>{       
         this.getOrderInfo();
+    }
+    /**
+     * 返回列表中的操作按钮
+     */
+    getOperationMenus=(record)=>{
+        let downBtn = <a className="item-a edit" href="javascript:;" title="下载"><Icon type="cloud-download" theme="outlined" /></a>;        
+        return (<Row>{downBtn}</Row>);
+    }
+    getFileNameCell(text,record){
+        console.log(record);
+        return (<a href={record.path}>{text}</a>);
     }
     /**
      * 请求接口获取订单信息
@@ -54,14 +87,56 @@ class ViewOrder extends BasePage {
                     isEdit:isOrderEdit,
                     isAdmin:isAdmin         
                 });
+                base.searchFile();
             }else{
                 base.setState({
                     loading:false
                 });
-            }
-            
+            }            
         });
     }
+
+    /**
+     * 查询订单项目文件
+     */
+    searchFile=(params={})=>{
+        const base = this;
+        params.orderId = this.state.orderInfo.id;
+        HttpUtils.get("/api/order/file/list",{params:params}).then(function(response){
+            if(response){
+                var pageInfo = response.pageInfo;
+                var pagination = {...base.state.pageInfo};
+                pagination.total = pageInfo.total;
+                pagination.current = pageInfo.pageNumber;                
+                base.setState({
+                    dataSource:response.list,
+                    pageInfo:pagination,
+                })
+            }
+        });
+    }
+
+    /**
+     * 切换页码
+     */
+    handleTableChange=(pagination,filters,sorter) => {        
+        var pager = {...this.state.pageInfo};
+        pager.current = pagination.current;
+        pager.pageNumber = pagination.current;
+        if(sorter.field){
+            pager.sortDirection = sorter.order.replace("end","");
+            pager.sortField = WebUtils.getHumpString(sorter.field);
+        }else{
+            pager.sortDirection = "desc";
+            pager.sortField = "create_date"
+        }
+        
+        this.setState({
+            pageInfo:pager,            
+        })
+        this.searchFile(pager);
+    }
+
     /**
      * 后退
      */
@@ -75,9 +150,17 @@ class ViewOrder extends BasePage {
         let id = this.props.match.params.id;
         this.props.history.push("/dash/order/edit/"+id);
     }
+
+    /**
+     * 文件列表Table脚注
+     */
+    getTableFooter=()=>{
+        const base = this;
+        return (<label>共找到<span style={{color:"#1890ff"}}> {base.state.pageInfo.total} </span>条文件信息</label>);
+    }
+
     render=()=>{
         const order = this.state.orderInfo;
-        const user = window.config.user;
         let branchUser = undefined;
         if(order.branch){
             if(order.branch.user){
@@ -93,6 +176,13 @@ class ViewOrder extends BasePage {
             </ButtonGroup>
         );
 
+        const locale = {
+            filterTitle: '筛选',
+            filterConfirm: '确定',
+            filterReset: '重置',
+            emptyText: '没有找到相关上传文件',
+        }
+
         if(order.sn!=undefined){   
 
             // 订单详情
@@ -101,6 +191,8 @@ class ViewOrder extends BasePage {
             let TabPanePayment = undefined;
             // 订单实时状态
             let TabPaneEvent = undefined;
+            // 订单项目文件
+            let TabPaneFile = undefined;
             if(this.state.isAdmin){
                 TabPaneMore = <TabPane tab="详细信息" key="more-info">
                     <div className="view-box">
@@ -189,7 +281,7 @@ class ViewOrder extends BasePage {
                                 </tr>
                                 <tr>
                                     <th>请款状态：</th>
-                                    <td><span>{WebUtils.getEnumTag(OrderStatus,order.paymentStatus)}</span></td>
+                                    <td><span>{WebUtils.getEnumTag(PaymentStatus,order.paymentStatus)}</span></td>
                                     <th>是否已开票：</th>
                                     <td><span>{order.isInvoice?'是':'否'}</span></td>
                                 </tr>
@@ -211,6 +303,12 @@ class ViewOrder extends BasePage {
                                 </tr>
                             </tbody>                            
                         </table>
+                    </div>
+                </TabPane>;
+
+                TabPaneFile = <TabPane tab="项目文件" key="file-info">
+                    <div className="grid-box">
+                        <Table locale={locale} footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
                     </div>
                 </TabPane>;
             }
@@ -272,7 +370,7 @@ class ViewOrder extends BasePage {
                                 </tr>
                                 <tr>
                                     <th>订单类型：</th>
-                                    <td><span>{order.orderType}</span></td>
+                                    <td><span>{WebUtils.getEnumTag(OrderType,order.orderType)}</span></td>
                                     <th>修改时间：</th>
                                     <td><span>{order.editDate}</span></td>
                                 </tr>
@@ -319,6 +417,7 @@ class ViewOrder extends BasePage {
                 {TabPaneMore}
                 {TabPanePayment}
                 {TabPaneEvent}
+                {TabPaneFile}
             </Tabs></div>;
         }
         return(

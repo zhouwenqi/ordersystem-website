@@ -1,0 +1,17 @@
+.log-box{
+    background-color: white;
+    font-size: 12px;
+}
+.log-box .ant-table-small > .ant-table-content > .ant-table-body > table > .ant-table-thead > tr > th {
+    background-color: #f3f3f3;
+}
+.log-box .ant-table-small > .ant-table-content > .ant-table-body {
+    margin:0 0;
+}
+.log-box .ant-table-small.ant-table-bordered .ant-table-footer{
+    border-right:none;
+    padding:6px 8px;
+}
+.log-form{
+    padding: 10px 0px;
+}

@@ -7,7 +7,7 @@ class LogoutPage extends React.Component {
         this.props.history.push("/login");    
     }
     render = ()=>{
-        return(<div></div>);
+        return(<div>5555</div>);
     }
 }
 export default LogoutPage;

@@ -107,10 +107,6 @@ class CreateOrderForm extends BasePage {
             }
         });
     }
-
-    componentDidMount =() =>{
-        
-    }
     
     /**
      * 查询客户列表
@@ -236,7 +232,7 @@ class CreateOrderForm extends BasePage {
                                             <FormItem {...formItemLayout}
                                                 label="省/市/区">
                                                 {getFieldDecorator('areas',
-                                                {rules:[{required:true,message:'请选择市'}]
+                                                {rules:[{required:true,message:'请选择地区'}]
                                                 })(<Cascader changeOnSelect={true} options={AreaData} placeholder="请选择" />)} 
                                             </FormItem>                     
                                         </Col>

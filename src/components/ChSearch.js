@@ -46,6 +46,24 @@ class ChSearch {
         timeout = setTimeout(getEmployeeData,300);
     }
     /**
+     * 查询网点负责人列表
+     */
+    branchsUserList = (func)=>{
+        if(timeout){
+            clearTimeout(timeout);
+            timeout = null;
+        }
+        function getEmployeeData(){
+            let params={role:"branchs"};
+            HttpUtil.get("/api/user/list",{params:params}).then(function(response){
+                if(response){
+                    func(response.list);
+                }
+            });
+        }
+        timeout = setTimeout(getEmployeeData,300);
+    }
+    /**
      * 获取网点列表
      */
     branchList = (func) => {

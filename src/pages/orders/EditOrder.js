@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { 
-    Form, Input,Tabs, Button,Spin,
-     Icon, Row, Message, Checkbox,
+    Form, Input,Tabs, Button,Spin,Upload,
+     Icon, Row, Message, Checkbox,Table,
      Cascader, DatePicker,Col,Modal,
      Select,InputNumber,Breadcrumb
 } from 'antd';
@@ -67,12 +67,70 @@ class EditOrderForm extends BasePage {
         isRefunds:false,   
         statusFrameShow:false,
         loadingStatus:false,
+        pageInfo:{
+            pageSize:20,
+            current:1,
+            total:0,
+            sortField:"create_date",
+            sortDirection:"desc",                
+        },       
+        downloadUrl:undefined,
+        dataSource:[],
     }
     static contextTypes = {
         menuRoute:PropTypes.func
-    }    
+    }   
+    componentWillMount = () =>{
+        // 文件表格列头
+        this.dataColumns = [
+            {title:'文件名',sorter: true,dataIndex:'name',render:(text,record)=>(this.getFileNameCell(text,record))},
+            {title:'文件路径',sorter: true,dataIndex:'path'},
+            {title:'文件类型',sorter: true,dataIndex:'fileType'},
+            {title:'关联订单', width:200,sorter: true,dataIndex:'orderSn'},
+            {title:'上传用户',sorter: true,dataIndex:'uid'},
+            {title:'下载次数', width:100,sorter: true,dataIndex:'uploadCount'},
+            {title:'上传时间',width:160,sorter: true,dataIndex:'createDate'},
+            {title:'操作',width:100,render:(record)=>(this.getOperationMenus(record))}
+        ];
+    } 
     componentDidMount =() =>{        
         this.getOrderInfo();        
+    }
+    getFileNameCell(text,record){
+        return (<a href="javascript:;" onClick={this.onDownloadFile.bind(this,record.path)}>{text}</a>);
+    }
+    /**
+     * 返回列表中的操作按钮
+     */
+    getOperationMenus=(record)=>{
+        let downBtn = <a className="item-a edit" onClick={this.onDownloadFile.bind(this,record.path)} href="javascript:;" title="下载"><Icon type="cloud-download" theme="outlined" /></a>;        
+        let deleteBtn = <a className="item-a delete" onClick={this.onDeleteFile.bind(this,record.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>;
+        return (<Row>{downBtn}{deleteBtn}</Row>);
+    }
+    getUploadConfig=()=>{
+        /**
+         * 上传文件
+         */
+        const base = this;
+        const uploadProps = {
+            name: 'file',
+            action: window.config.apiUrl+'/api/order/file/upload?orderId='+this.state.orderInfo.id,
+            headers: {
+                "ch-token": window.config.token,
+            },
+            onChange(info) {
+                if (info.file.status !== 'uploading') {
+                    console.log(info.file, info.fileList);
+                }
+                if (info.file.status === 'done') {
+                    Message.success(`${info.file.name} 文件上传成功`);
+                    base.searchFile();
+                } else if (info.file.status === 'error') {
+                    Message.error(`${info.file.name} 文件上传失败`);
+                }
+            },
+        };
+        return uploadProps;
     }
     
     /**
@@ -125,6 +183,8 @@ class EditOrderForm extends BasePage {
                         if(orderInfo.branchId){
                             base.getEnginnerList(orderInfo.branchId);
                         }
+                        // 获取订单关联文件
+                        base.searchFile();
                         
                     }));          
                 }
@@ -134,6 +194,79 @@ class EditOrderForm extends BasePage {
                 });
             }
         });
+    }
+
+    /**
+     * 查询订单项目文件
+     */
+    searchFile=(params={})=>{
+        const base = this;
+        params.orderId = this.state.orderInfo.id;
+        HttpUtils.get("/api/order/file/list",{params:params}).then(function(response){
+            if(response){
+                var pageInfo = response.pageInfo;
+                var pagination = {...base.state.pageInfo};
+                pagination.total = pageInfo.total;
+                pagination.current = pageInfo.pageNumber;                
+                base.setState({
+                    dataSource:response.list,
+                    pageInfo:pagination,
+                })
+            }
+        });
+    }
+
+    /**
+     * 切换页码
+     */
+    handleTableChange=(pagination,filters,sorter) => {        
+        var pager = {...this.state.pageInfo};
+        pager.current = pagination.current;
+        pager.pageNumber = pagination.current;
+        if(sorter.field){
+            pager.sortDirection = sorter.order.replace("end","");
+            pager.sortField = WebUtils.getHumpString(sorter.field);
+        }else{
+            pager.sortDirection = "desc";
+            pager.sortField = "create_date"
+        }
+        
+        this.setState({
+            pageInfo:pager,            
+        })
+        this.searchFile(pager);
+    }
+
+    /**
+     * 下载文件
+     */
+    onDownloadFile=(path)=>{
+        let url = window.config.apiUrl;
+        url += path + "?rnd="+Math.random()*0.01;
+        console.log(url);
+        this.setState({
+            downloadUrl:url
+        })
+    }
+
+    /**
+     * 删除文件
+     */
+    onDeleteFile=(fileId)=>{
+        Confirm({
+            title:"删除文件",
+            content:"确定要删除这个文件吗？",
+            onOk:()=>{
+                const data = {id:fileId};
+                const base = this;
+                HttpUtils.post('/api/order/file/delete',data).then(function(response){
+                    base.searchFile();
+                });
+            },
+            onCancel:()=>{
+
+            }
+        })
     }
 
 
@@ -188,16 +321,7 @@ class EditOrderForm extends BasePage {
                 loading:false
             });
             if(response){
-                Modal.success({
-                    title: '提交成功',
-                    content: '您的订单已修改成功',
-                    okText: '好的',
-                    onOk(){
-                        // let {menuRoute} = this.context;
-                        base.context.menuRoute('dash.order');
-                        base.props.history.push("/dash/order");
-                    }
-                });                
+                Message.success("订单信息修改成功");                
             }
         });
     }
@@ -217,7 +341,7 @@ class EditOrderForm extends BasePage {
     onSelectBranch=(e)=>{
         this.setState({
             currentEnginner:{},
-            engineerData:[],
+            enginnerData:[],
         });
         this.state.branchData.map((item,index)=>{            
             if(item.id===e){
@@ -230,12 +354,15 @@ class EditOrderForm extends BasePage {
     /**
      * 选择工程师
      */
-    onSelectEnginner=(e)=>{
-        this.state.engineerData.map((item,index)=>{
+    onSelectEnginner=(e)=>{        
+        console.log(e);
+        this.state.enginnerData.map((item,index)=>{
+            console.log("id:"+item.ie+",e:"+e);
             if(item.id===e){
                 this.setState({
                     currentEnginner:item
-                })
+                });
+                console.log("item",item);
             }
         });
     }
@@ -255,9 +382,8 @@ class EditOrderForm extends BasePage {
     /**
      * 调整结算金额
      */
-    onChangePaymentPrice=(e,tag)=>{
-        const user = window.config.user;
-        if(user.role==='manager' || user.role==='employee'){
+    onChangePaymentPrice=(e,tag)=>{       
+        if(this.state.isAdmin){
             let values = this.props.form.getFieldsValue(["routeServicePrice","branchBalancePrice","branchOtherPrice"]);        
             values[tag]=e;
             this.props.form.setFieldsValue({
@@ -361,6 +487,49 @@ class EditOrderForm extends BasePage {
         this.statusForm = statusForm;
     }
 
+    /**
+     * 删除证单
+     */
+    onRemoveOrder=(orderId)=>{
+        const base = this;
+        Confirm({
+            title: '删除订单',
+            content: '确定要删除这张订单吗？',
+            onOk() {
+                var params = {id:orderId};
+                HttpUtils.delete("/api/order/delete",{params:params}).then(function(response){                    
+                    if(response){                        
+                        base.context.menuRoute('dash.order');
+                        base.props.history.push("/dash/order");
+                    }
+                });
+            },
+            onCancel() {},
+        });
+    }
+
+    /**
+     * 取消订单
+     */
+    onCancelOrder=(orderId)=>{
+        const base = this;
+        Confirm({
+            title: '取消订单',
+            content: '确定要取消这张订单吗？',
+            onOk() {
+                const orderStatus = 'cancel';
+                var data = {id:orderId,orderStatus:orderStatus};
+                HttpUtils.post("/api/order/updateStatus",data).then(function(response){                    
+                    if(response){
+                        base.context.menuRoute('dash.order');
+                        base.props.history.push("/dash/order");
+                    }
+                });
+            },
+            onCancel() {},
+        });
+    }
+
 
     /**
      * 后退
@@ -441,19 +610,12 @@ class EditOrderForm extends BasePage {
             </Col>                            
         </Row>
 
-        let deleteBtn = <Button icon="undo" title="取消" onClick={this.onBack}></Button>;
-        if(this.state.isAdmin){
-            deleteBtn = <Button icon="delete" title="删除" onClick={this.onBack}></Button>
+        const locale = {
+            filterTitle: '筛选',
+            filterConfirm: '确定',
+            filterReset: '重置',
+            emptyText: '没有找到相关上传文件',
         }
-        
-        // Tabs 扩展Button  
-        const extOperations = (
-            <ButtonGroup>
-                <Button icon="left" title="返回" onClick={this.onBack}></Button>                
-                {deleteBtn}
-                <Button loading={this.state.loading} title="保存" icon="save" htmlType="submit">保存订单</Button>
-            </ButtonGroup>
-        )
 
         // 编辑表单内容
         let editContent = undefined;        
@@ -464,7 +626,27 @@ class EditOrderForm extends BasePage {
             let TabPanePayment = undefined;
             // 订单实时状态
             let TabPaneEvent = undefined;
-            if(user.role==='manager' || user.role==='employee'){
+            // 订单项目文件
+            let TabPaneFile = undefined;
+
+            let deleteBtn = undefined;
+            if(order.orderStatus==='pending'){
+                deleteBtn = <Button icon="undo" title="撤销订单" onClick={this.onCancelOrder.bind(this,order.id)}></Button>;
+            }
+            if(this.state.isAdmin){
+                deleteBtn = <Button icon="delete" title="删除订单" onClick={this.onRemoveOrder.bind(this,order.id)}></Button>
+            }
+            
+            // Tabs 扩展Button  
+            const extOperations = (
+                <ButtonGroup>
+                    <Button icon="left" title="返回" onClick={this.onBack}></Button>                
+                    {deleteBtn}
+                    <Button loading={this.state.loading} title="保存" icon="save" htmlType="submit">保存订单</Button>
+                </ButtonGroup>
+            );
+
+            if(this.state.isAdmin){
                 TabPaneMore = <TabPane tab="详细信息" key="more-info">
                     <Row>
                         <Col span={12}>                            
@@ -783,7 +965,16 @@ class EditOrderForm extends BasePage {
                             </Row>
                         </Col>
                     </Row>
-                </TabPane>
+                </TabPane>;
+
+                TabPaneFile = <TabPane tab="项目文件" key="file-info">
+                <div className="grid-box">
+                    <Upload {...this.getUploadConfig()}>
+                        <Button icon="cloud-upload">上传文件</Button>   
+                    </Upload>
+                    <Table style={{marginTop:"10px"}} locale={locale} footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
+                </div>
+                </TabPane>;
             }
             let OrderEvents = [];
             if(this.state.orderEvents.length>0){
@@ -828,7 +1019,7 @@ class EditOrderForm extends BasePage {
                 </div>
             </TabPane>
 
-            editContent = (<div className="grid-form">
+            editContent = (<div className="grid-form">            
             <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>
                 <Tabs tabBarExtraContent={extOperations} type="card">
                     <TabPane tab="基本信息" key="basic-info">                                                
@@ -902,7 +1093,7 @@ class EditOrderForm extends BasePage {
                                         <FormItem {...formItemLayout}
                                             label="省/市/区">
                                             {getFieldDecorator('areas',
-                                            {rules:[{required:true,message:'请选择市'}],initialValue:[order.province,order.city,order.area]
+                                            {rules:[{required:true,message:'请选择地区'}],initialValue:[order.province,order.city,order.area]
                                             })(<Cascader changeOnSelect={true} options={AreaData} placeholder="请选择" />)} 
                                         </FormItem>                     
                                     </Col>
@@ -977,20 +1168,22 @@ class EditOrderForm extends BasePage {
                     {TabPaneMore}
                     {TabPanePayment}
                     {TabPaneEvent}
+                    {TabPaneFile}
                 </Tabs>                
             </Form>
             </div>);
         }
         return (        
-        <Spin  spinning={this.state.loading}>
+        <div>
             <Breadcrumb style={{marginTop:"10px"}}>
                 <Breadcrumb.Item>控制台</Breadcrumb.Item>
                 <Breadcrumb.Item>我的订单</Breadcrumb.Item>
                 <Breadcrumb.Item><Link to="/dash/order">订单列表</Link></Breadcrumb.Item>
                 <Breadcrumb.Item>修改订单</Breadcrumb.Item>
             </Breadcrumb>
+            <iframe src={this.state.downloadUrl} /> 
             {editContent}
-        </Spin>
+        </div>
         );
     }  
 }

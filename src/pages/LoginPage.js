@@ -11,7 +11,7 @@ const FormItem = Form.Item;
 class LoginPageForm extends React.Component { 
     componentWillMount = () =>{
         if(cookie.load("chToken")!==undefined){
-            this.props.history.push("/");
+            this.props.history.push("/dash/order");
         }       
     }
     /**
@@ -44,7 +44,7 @@ class LoginPageForm extends React.Component {
             if(data.autoLogin){
                 cookie.save('chToken', response.token, { path: '/',maxAge:new Date().setDate(new Date().getDate()+30) });  
             }            
-            history.push('/');
+            history.push('/dash/order');
         });
     }
     

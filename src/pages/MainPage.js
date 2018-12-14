@@ -10,6 +10,14 @@ import OrderManagerList from './orders/OrderManagerList';
 import CreateOrder from './orders/CreateOrder';
 import EditOrder from './orders/EditOrder';
 import ViewOrder from './orders/ViewOrder';
+import EditUserinfo from './users/EditUserinfo';
+import EditPassword from './users/EditPassword';
+import BranchList from './branchs/BranchList';
+import CreateBranch from './branchs/CreateBranch';
+import EditBranch from './branchs/EditBranch';
+import UserList from './users/UserList';
+import CreateUser from './users/CreateUser';
+import LogList from './setup/LogList';
 
 import './mainPage.css';
 import Role from '../common/Role';
@@ -98,6 +106,9 @@ class MainPage extends React.Component {
         }
         const base = this;
         HttpUtils.get("/api/user/my/info").then(function(response){
+            if(!response){
+                base.props.history.push("/login");
+            }
             window.config.user = response.user;
             let OrderListRoute = <Route path="/dash/order" exact component={OrderList} />;
             const isAdmin = window.config.user.role==='manager' || window.config.user.role==='employee';
@@ -111,7 +122,17 @@ class MainPage extends React.Component {
                 {OrderListRoute}
                 <Route path="/dash/order/create" component={CreateOrder} /> 
                 <Route path="/dash/order/view/:id" component={ViewOrder} />             
-                <Route path="/dash/order/edit/:id" component={EditOrder} />  
+                <Route path="/dash/order/edit/:id" component={EditOrder} />
+                <Route path="/dash/user/list" component={UserList} />
+                <Route path="/dash/user/create" component={CreateUser} />
+                <Route path="/dash/user/edit/:id" component={EditUserinfo} />
+                <Route path="/dash/my/user/edit" component={EditUserinfo} />
+                <Route path="/dash/user/password/edit/:id" component={EditPassword} />
+                <Route path="/dash/my/password/edit" component={EditPassword} />
+                <Route path="/dash/branch/list" component={BranchList} />
+                <Route path="/dash/branch/add" component={CreateBranch} />
+                <Route path="/dash/branch/edit/:id" component={EditBranch} />
+                <Route path="/dash/log/list" component={LogList} />
                 </Content>,
                 isAdmin:isAdmin,
                 isLogin:true,
@@ -154,14 +175,31 @@ class MainPage extends React.Component {
     render(){        
         let subMainMenuTag = "我的订单"
         let subUserAdminMenu = undefined;
+        let subBranchAdminMenu = undefined;
+        let subSetupAdminMenu = undefined;
         if(this.state.isAdmin){
             subMainMenuTag = "订单管理"
-            subUserAdminMenu = <SubMenu key="users" title={<span><Icon type="team" />用户管理</span>}>
-                <Menu.Item key="dash.user.info">
-                    <Link to='/dash/order'>用户列表</Link>
+            subUserAdminMenu = <SubMenu key="users" title={<span><Icon type="team" />用户管理</span>}>                
+                <Menu.Item key="dash.user.list">
+                    <Link to='/dash/user/list'>用户列表</Link>
                 </Menu.Item>
-                <Menu.Item key="dash.user.add">添加用户</Menu.Item>
+                <Menu.Item key="dash.user.add">
+                    <Link to='/dash/user/create'>添加用户</Link>
+                </Menu.Item>
             </SubMenu>;
+            subBranchAdminMenu = <SubMenu key="branches" title={<span><Icon type="branches" />网点管理</span>}>                
+                <Menu.Item key="dash.branch.list">
+                    <Link to='/dash/branch/list'>网点列表</Link>
+                </Menu.Item>
+                <Menu.Item key="dash.branch.add">
+                    <Link to='/dash/branch/add'>添加网点</Link>
+                </Menu.Item>
+            </SubMenu>;
+            subSetupAdminMenu = <SubMenu key="setting" title={<span><Icon type="setting" />系统设置</span>}>                
+            <Menu.Item key="dash.log.list">
+                <Link to='/dash/log/list'>系统日志</Link>
+            </Menu.Item>
+        </SubMenu>;
         }
         let topInfo = undefined;
         let fullScreen = <a href="javascript:;" style={{marginRight:"10px"}} onClick={this.onFullScreen}><Icon title="全屏" type="fullscreen" /></a>
@@ -175,8 +213,7 @@ class MainPage extends React.Component {
                 {fullScreen}
                 <a href="javascript:;" onClick={this.onExit}><Icon title="退出登录" type="poweroff" /></a>
             </div>;
-        }
-        
+        }        
         return (
             <Layout>
                 <Header style={{padding:"0px 10px"}}>
@@ -201,13 +238,17 @@ class MainPage extends React.Component {
                                     <Link to='/dash/order/create'>创建订单</Link>
                                 </Menu.Item>
                             </SubMenu>
+                            {subBranchAdminMenu}
                             {subUserAdminMenu}
                             <SubMenu key="my" title={<span><Icon type="user" />个人资料</span>}>
-                                <Menu.Item key="dash.my.info">
-                                    <Link to='/dash/order'>修改资料</Link>
+                                <Menu.Item key="dash.my.user.edit">
+                                    <Link to='/dash/my/user/edit'>修改资料</Link>
                                 </Menu.Item>
-                                <Menu.Item key="dash.my.password">修改密码</Menu.Item>
-                            </SubMenu>                            
+                                <Menu.Item key="dash.my.password.edit">
+                                    <Link to ='/dash/my/password/edit'>修改密码</Link>
+                                </Menu.Item>
+                            </SubMenu>  
+                            {subSetupAdminMenu}                          
                         </Menu>
                     </Sider>
                     <Layout style={{overflow:'auto',backgroundColor:'white',padding:'12px'}}>

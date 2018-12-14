@@ -68,7 +68,7 @@ class OrderListForm extends BasePage {
             {title:'派单时间',sorter: true,dataIndex:'assignDate',render:(text)=>(moment(text).format("YYYY-MM-DD"))},
             {title:'创建时间',sorter: true,dataIndex:'createDate',defaultSortOrder: 'descend'},
             {title:'状态',dataIndex:'orderStatus',render:(id,record)=>(<OrderStatusDropDown orderInfo={record} />)},
-            {title:'操作',dataIndex:'',render:(id,record)=>(this.getOperationMenus(record))},
+            {title:'操作',width:90,render:(id,record)=>(this.getOperationMenus(record))},
         ];
     }
     componentDidMount = ()=>{
