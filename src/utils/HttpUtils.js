@@ -7,12 +7,18 @@ const axiosService = axios.create({
 })
 axiosService.interceptors.request.use(
     config => {
+        console.log("config",config);
         config.headers['ch-token'] = window.config.token;
         config.headers['Content-Type'] = 'application/x-www-form-urlencoded';
         if(config.method==='post' || config.method==='put'){
             config.data = qs.stringify(config.data);
         }
-        
+        if(config.url.indexOf("?")===-1){
+            config.url+="?";
+        }else{
+            config.url+="&";
+        }
+        config.url+="rndcode="+Math.random()*0.01;
         return config;
     },
     error => {

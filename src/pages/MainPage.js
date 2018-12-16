@@ -18,6 +18,8 @@ import EditBranch from './branchs/EditBranch';
 import UserList from './users/UserList';
 import CreateUser from './users/CreateUser';
 import LogList from './setup/LogList';
+import AmountCharts from './charts/AmountCharts';
+import CategoryCharts from './charts/CategoryCharts';
 
 import './mainPage.css';
 import Role from '../common/Role';
@@ -64,6 +66,7 @@ class MainPage extends React.Component {
         currentMenuIndex:'order',
         routes:<Content></Content>,
         isAdmin:false,
+        isManager:false,
         isLogin:false,
         isFullScreen:false,
     }
@@ -107,10 +110,16 @@ class MainPage extends React.Component {
         const base = this;
         HttpUtils.get("/api/user/my/info").then(function(response){
             if(!response){
-                base.props.history.push("/login");
+                cookie.remove("chToken");
+                window.location.href = "/login";
+            }
+            if(!response.user.isEnabled){
+                cookie.remove("chToken");
+                window.location.href = "/login";
             }
             window.config.user = response.user;
             let OrderListRoute = <Route path="/dash/order" exact component={OrderList} />;
+            const isManager = window.config.user.role==='manager';
             const isAdmin = window.config.user.role==='manager' || window.config.user.role==='employee';
             if(isAdmin){
                 OrderListRoute = <Route path="/dash/order" exact component={OrderManagerList} />;
@@ -133,8 +142,11 @@ class MainPage extends React.Component {
                 <Route path="/dash/branch/add" component={CreateBranch} />
                 <Route path="/dash/branch/edit/:id" component={EditBranch} />
                 <Route path="/dash/log/list" component={LogList} />
+                <Route path="/dash/charts/amount" component={AmountCharts} />
+                <Route path="/dash/charts/category" component={CategoryCharts} />
                 </Content>,
                 isAdmin:isAdmin,
+                isManager:isManager,
                 isLogin:true,
             })
 
@@ -177,16 +189,9 @@ class MainPage extends React.Component {
         let subUserAdminMenu = undefined;
         let subBranchAdminMenu = undefined;
         let subSetupAdminMenu = undefined;
+        let subChartAdminMenu = undefined;
         if(this.state.isAdmin){
-            subMainMenuTag = "订单管理"
-            subUserAdminMenu = <SubMenu key="users" title={<span><Icon type="team" />用户管理</span>}>                
-                <Menu.Item key="dash.user.list">
-                    <Link to='/dash/user/list'>用户列表</Link>
-                </Menu.Item>
-                <Menu.Item key="dash.user.add">
-                    <Link to='/dash/user/create'>添加用户</Link>
-                </Menu.Item>
-            </SubMenu>;
+            subMainMenuTag = "订单管理"            
             subBranchAdminMenu = <SubMenu key="branches" title={<span><Icon type="branches" />网点管理</span>}>                
                 <Menu.Item key="dash.branch.list">
                     <Link to='/dash/branch/list'>网点列表</Link>
@@ -196,10 +201,29 @@ class MainPage extends React.Component {
                 </Menu.Item>
             </SubMenu>;
             subSetupAdminMenu = <SubMenu key="setting" title={<span><Icon type="setting" />系统设置</span>}>                
-            <Menu.Item key="dash.log.list">
-                <Link to='/dash/log/list'>系统日志</Link>
-            </Menu.Item>
-        </SubMenu>;
+                <Menu.Item key="dash.log.list">
+                    <Link to='/dash/log/list'>系统日志</Link>
+                </Menu.Item>
+            </SubMenu>;
+            subChartAdminMenu = <SubMenu key="barChart" title={<span><Icon type="bar-chart" />统计报表</span>}>                
+                <Menu.Item key="dash.charts.amount">
+                    <Link to='/dash/charts/amount'>帐务信息统计</Link>
+                </Menu.Item>
+                <Menu.Item key="dash.charts.category">
+                    <Link to='/dash/charts/category'>分类帐务统计</Link>
+                </Menu.Item>
+            </SubMenu>;
+        }
+        if(this.state.isManager){            
+            subUserAdminMenu = <SubMenu key="users" title={<span><Icon type="team" />用户管理</span>}>                
+                <Menu.Item key="dash.user.list">
+                    <Link to='/dash/user/list'>用户列表</Link>
+                </Menu.Item>
+                <Menu.Item key="dash.user.add">
+                    <Link to='/dash/user/create'>添加用户</Link>
+                </Menu.Item>
+            </SubMenu>;
+            
         }
         let topInfo = undefined;
         let fullScreen = <a href="javascript:;" style={{marginRight:"10px"}} onClick={this.onFullScreen}><Icon title="全屏" type="fullscreen" /></a>
@@ -248,7 +272,8 @@ class MainPage extends React.Component {
                                     <Link to ='/dash/my/password/edit'>修改密码</Link>
                                 </Menu.Item>
                             </SubMenu>  
-                            {subSetupAdminMenu}                          
+                            {subChartAdminMenu} 
+                            {subSetupAdminMenu}                                                   
                         </Menu>
                     </Sider>
                     <Layout style={{overflow:'auto',backgroundColor:'white',padding:'12px'}}>

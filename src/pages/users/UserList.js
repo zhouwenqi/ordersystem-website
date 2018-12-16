@@ -90,7 +90,7 @@ class UserListForm extends React.Component{
     componentWillMount = () =>{
         // 表格列头
         this.dataColumns = [
-            {title:'用户名',sorter: true,dataIndex:'uid',render:(id,record)=>(<Link to={'/dash/user/view/'+record.id}>{record.uid}</Link>)},
+            {title:'用户名',sorter: true,dataIndex:'uid',render:(id,record)=>(<Link to={'/dash/user/edit/'+record.id}>{record.uid}</Link>)},
             {title:'真实姓名',sorter: true,dataIndex:'realName'},
             {title:'姓别',sorter: true,dataIndex:'sex',render:(id,record)=>(WebUtils.getEnumTag(Sex,record.sex))},
             {title:'公司名称',sorter: true,dataIndex:'company'},

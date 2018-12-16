@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Button, Icon, Row, Message, Checkbox } from 'antd';
+import { Form, Input, Button, Icon, Row, message, Checkbox } from 'antd';
 import cookie from 'react-cookies';
 import httpUtil from '../utils/HttpUtils';
 import './loginPage.css';
@@ -38,6 +38,10 @@ class LoginPageForm extends React.Component {
             if(response === undefined || response==null){
                 return;
             }
+            if(!response.user.isEnabled){
+                message.warning("帐号已被禁用");
+                return;
+            }
             window.config.token = response.token;
             cookie.save('chToken', response.token, { path: '/' }); 
             // 保存token到cookie
@@ -49,7 +53,7 @@ class LoginPageForm extends React.Component {
     }
     
     forgotPassword = ()=>{
-        Message.info("请联系管理员");
+        message.info("请联系管理员");
     }
     render(){
         const {getFieldDecorator} = this.props.form;

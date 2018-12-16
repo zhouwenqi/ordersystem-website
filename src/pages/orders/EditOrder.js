@@ -976,7 +976,19 @@ class EditOrderForm extends BasePage {
                 </div>
                 </TabPane>;
             }
-            let OrderEvents = [];
+            
+            /**
+             * 订单事件处理
+             */
+            let OrderEvents = [];            
+            let addEventBtn = undefined;
+            let deleteEventBtnEnabled = {
+                disabled:"disabled"
+            };
+            if(this.state.isAdmin || user.role==='engineer'){
+                addEventBtn = <Button onClick={this.onAddEvent.bind(this)} style={{marginBottom:"10px"}} icon="plus">添加状态</Button>
+                deleteEventBtnEnabled:{}
+            }
             if(this.state.orderEvents.length>0){
                 this.state.orderEvents.map((item,index)=>{
                     OrderEvents.push(
@@ -985,7 +997,7 @@ class EditOrderForm extends BasePage {
                             <td>{item.realName}({item.uid})</td>
                             <td>{item.description}</td>
                             <td>{Moment(item.eventTime).format("YYYY-MM-DD")}</td>
-                            <td><a className="item-a delete" onClick={this.onRemoveEvent.bind(this,item.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a></td>
+                            <td><a className="item-a delete" {...deleteEventBtnEnabled} onClick={this.onRemoveEvent.bind(this,item.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a></td>
                         </tr>
                     )
                 });
@@ -1000,7 +1012,7 @@ class EditOrderForm extends BasePage {
 
             TabPaneEvent = <TabPane tab="实时状态" key="event-info">
                 <div className="view-box">   
-                    <Button onClick={this.onAddEvent.bind(this)} style={{marginBottom:"10px"}} icon="plus">添加状态</Button>                 
+                    {addEventBtn}              
                     <OrderStatusFragment wrappedComponentRef={this.getOrderStatusForm.bind(this)} loadingStatus={this.state.loadingStatus} visible={this.state.statusFrameShow} onCancel={this.onHandleCancel} onCreate={this.onHandleCreate} />
                     <table className="view-table">
                         <thead>

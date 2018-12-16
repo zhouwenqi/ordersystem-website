@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { 
-    Form, Input,Tabs, Button,Spin,
+    Form, Input,Tabs, Button,Spin,Checkbox,
     Breadcrumb, Row, Message, Modal,
     Radio, Col,Select
 } from 'antd';
@@ -45,6 +45,7 @@ class EditUserFrom extends React.Component {
             loading:false,
             userInfo:{},
             branchData:[],
+            isEnabled:false,
         } 
     }
     static contextTypes = {
@@ -108,10 +109,14 @@ class EditUserFrom extends React.Component {
             if(response){
                 base.setState({
                     userInfo:response.user,
+                    isEnabled:response.user.isEnabled,
                     loading:false,
                 });                
             }
-            base.getBranchsData();
+            if(window.config.user.rolw==='manager'){
+                base.getBranchsData();
+            }
+            
         });
     }
 
@@ -146,6 +151,15 @@ class EditUserFrom extends React.Component {
                 branchData:list,
             })
         });
+    }
+
+    /**
+     * 是否启用状态切换
+     */
+    onEnabledChange=(e)=>{
+        const key = e.target.id
+        const status = !this.state[key];
+        this.setState({[key]:status});
     }
 
     /**
@@ -185,6 +199,44 @@ class EditUserFrom extends React.Component {
             height: '30px',
             lineHeight: '30px',
         };
+
+        let adminUserInfo = undefined;
+        if(window.config.user.role==='manager'){
+            adminUserInfo = <React.Fragment>
+            <Row>
+                <Col span={24}>
+                    <FormItem {...formItemLayout}
+                        label="所属网点">
+                        {getFieldDecorator('branchId',
+                        {rules:[{required:false}],initialValue:user.branchId
+                        })(<Select>
+                            {branchs}
+                        </Select>)} 
+                    </FormItem>                    
+                </Col>
+            </Row>
+            <Row>
+                <Col span={24}>
+                    <FormItem {...formItemLayout}
+                        label="是否启用">
+                        {getFieldDecorator('isEnabled',
+                        {rules:[{required:false}],initialValue:this.state.isEnabled
+                        })(<Checkbox checked={this.state.isEnabled} onChange={this.onEnabledChange} placeholder="是否已回款" />)} 
+                    </FormItem>                    
+                </Col>
+            </Row>
+            <Row>
+                <Col span={24}>
+                    <FormItem {...formItemLayout}
+                        label="角色">
+                        {getFieldDecorator('role',
+                        {rules:[{required:false}],initialValue:user.role
+                        })(<RadioGroup options={Role} />)} 
+                    </FormItem>                    
+                </Col>
+            </Row>
+            </React.Fragment>;
+        }
        
         return (
             <Spin spinning={this.state.loading}>
@@ -260,28 +312,7 @@ class EditUserFrom extends React.Component {
                                                 </FormItem>                    
                                             </Col>
                                         </Row>
-                                        <Row>
-                                            <Col span={24}>
-                                                <FormItem {...formItemLayout}
-                                                    label="所属网点">
-                                                    {getFieldDecorator('branchId',
-                                                    {rules:[{required:false}],initialValue:user.branchId
-                                                    })(<Select>
-                                                        {branchs}
-                                                    </Select>)} 
-                                                </FormItem>                    
-                                            </Col>
-                                        </Row>
-                                        <Row>
-                                            <Col span={24}>
-                                                <FormItem {...formItemLayout}
-                                                    label="角色">
-                                                    {getFieldDecorator('role',
-                                                    {rules:[{required:false}],initialValue:user.role
-                                                    })(<RadioGroup options={Role} />)} 
-                                                </FormItem>                    
-                                            </Col>
-                                        </Row>
+                                        {adminUserInfo}
                                         <Row>                                        
                                             <Col span={24}>
                                                 <FormItem {...btnItemLayout}>

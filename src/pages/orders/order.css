@@ -25,6 +25,9 @@
 .ant-layout a.item-a i{
     color:#999999;
 }
+.ant-layout a.item-a[disabled] i{
+    color: #eaeaea;
+}
 .ant-layout a.item-a i:hover{
     color:#1890ff;
 }
