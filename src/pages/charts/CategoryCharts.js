@@ -25,6 +25,7 @@ class CategoryChartsForm extends React.Component{
             loading:false,
             chartsType:'month',
             branchData:[],
+            chartsData:[],
         };
     } 
     /**
@@ -32,6 +33,7 @@ class CategoryChartsForm extends React.Component{
      */
     handleSubmit = (e) =>{
         e.preventDefault();
+        const base = this;
         this.props.form.validateFields((err,values) => {
             if(!err) {
                 console.log(values);
@@ -41,8 +43,8 @@ class CategoryChartsForm extends React.Component{
                         return;
                     }
                     const diffx = values.endMonth.diff(values.beginMonth,'month');
-                    if(diffx <=0 ){
-                        message.warning("月份间差必须大于0");
+                    if(diffx <=0 || diffx>7){
+                        message.warning("月份间差必须大于0和小于7");
                         return;
                     }
                 }
@@ -50,7 +52,9 @@ class CategoryChartsForm extends React.Component{
                 values.endMonth = values.endMonth.format("YYYY-MM");
                 HttpUtils.post('/api/order/categoryCharts',values).then(function(response){
                     if(response){
-                        console.log(response.list);
+                        base.setState({
+                            chartsData:response.list,
+                        })                        
                     }
                 });
             }            
@@ -102,9 +106,7 @@ class CategoryChartsForm extends React.Component{
         })( <MonthPicker style={{margin:"0px 10px"}}
             placeholder="选择结束月份"
           />);
-
-
-
+        
         let formPanel = <React.Fragment>{beginMonth}<label>至</label>{endMonth}</React.Fragment>;
 
         if(this.state.chartsType == 'branch'){
@@ -121,7 +123,15 @@ class CategoryChartsForm extends React.Component{
             {priceTypes}
             </Select>);
         }
+        const chartsData = this.state.chartsData;
+        const dv = new DataSet.View().source(chartsData);
+        dv.transform({
+        type: 'fold',
         
+        key: '月份',
+        value: '月均降雨量',
+        });
+        const data = dv.rows;
         return (
             <div>
                 <Form onSubmit={this.handleSubmit} size="small" style={{marginBottom:"10px"}}>
@@ -144,7 +154,12 @@ class CategoryChartsForm extends React.Component{
                 </Form>
                 <div className="charts-box">
                     <div className="charts-title">帐务信息统计</div>
-                    
+                    <Chart forceFit height={400} data={chartsData}>
+                        <Tooltip />
+                        <Axis />
+                        <Legend />
+                        <Bar position="totalMonth*totalPrice" adjust={[{ type: 'dodge', marginRatio: 1 / 32 }]} />
+                    </Chart>
                 </div>
             </div>
         );
