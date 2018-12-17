@@ -7,7 +7,6 @@ const axiosService = axios.create({
 })
 axiosService.interceptors.request.use(
     config => {
-        console.log("config",config);
         config.headers['ch-token'] = window.config.token;
         config.headers['Content-Type'] = 'application/x-www-form-urlencoded';
         if(config.method==='post' || config.method==='put'){
