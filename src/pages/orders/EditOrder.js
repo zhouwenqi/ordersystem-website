@@ -598,18 +598,7 @@ class EditOrderForm extends BasePage {
         });
 
         // 读取当前登录用户信息
-        const user = window.config.user;        
-        let CustomerSelect = <Row>
-            <Col span={24}>
-                <FormItem {...formItemLayout}
-                    label="订单来源">
-                    {getFieldDecorator('userCreate',
-                    {rules:[{required:false}]
-                    })(<Input disabled type="text" placeholder={WebUtils.getSelectCustomerName(user)} />)} 
-                </FormItem>                    
-            </Col>                            
-        </Row>
-
+        const user = window.config.user; 
         const locale = {
             filterTitle: '筛选',
             filterConfirm: '确定',
@@ -1037,7 +1026,16 @@ class EditOrderForm extends BasePage {
                     <TabPane tab="基本信息" key="basic-info">                                                
                         <Row>
                             <Col span={12}>                               
-                                {CustomerSelect}
+                                <Row>
+                                    <Col span={24}>
+                                        <FormItem {...formItemLayout}
+                                            label="订单来源">
+                                            {getFieldDecorator('userCreate',
+                                            {rules:[{required:false}]
+                                            })(<Input disabled type="text" placeholder={WebUtils.getSelectCustomerName(order.orderUser)} />)} 
+                                        </FormItem>                    
+                                    </Col>                            
+                                </Row>
                                 <Row>
                                     <Col span={24}>
                                         <FormItem {...formItemLayout}
