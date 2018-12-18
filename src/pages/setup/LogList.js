@@ -1,25 +1,13 @@
 import React from 'react';
 import { 
-    Form, Table,Row,Col,Select
+    Form, Table,Select
 } from 'antd';
 import HttpUtils from '../../utils/HttpUtils';
 import WebUtils from '../../utils/WebUtils';
 import './log.css';
 import LogType from '../../common/LogType';
 
-const FormItem = Form.Item;
 const Option = Select.Option;
-
-const formItemLayout = {
-    labelCol: {
-      xs: { span: 18 },
-      sm: { span: 4 },
-    },
-    wrapperCol: {
-      xs: { span: 18 },
-      sm: { span: 14 },
-    },
-};
 
 /**
  * 日志列表
@@ -125,8 +113,7 @@ class LogListForm extends React.Component{
         const base = this;
         return (<label>共找到<span style={{color:"#1890ff"}}> {base.state.pageInfo.total} </span>条日志信息</label>);
     }
-    render=()=>{
-        const {getFieldDecorator} = this.props.form; 
+    render=()=>{        
         const locale = {
             filterTitle: '筛选',
             filterConfirm: '确定',

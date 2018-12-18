@@ -4,14 +4,13 @@ import PropTypes from 'prop-types';
 import { 
      Form, Input,Tabs, Button,Spin,
      Icon, Row, Message, Table,Modal,
-     Cascader, DatePicker,Col,
-     Select,InputNumber,Breadcrumb
+     Cascader, Col,
+     Select,Breadcrumb
 } from 'antd';
 import AreaData from '../../common/AreaData';
 import HttpUtils from '../../utils/HttpUtils';
 import WebUtils from '../../utils/WebUtils';
 import axios from 'axios';
-import ChSearch from '../../components/ChSearch';
 
 const FormItem = Form.Item;
 const Option = Select.Option;

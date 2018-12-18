@@ -15,9 +15,9 @@ class ChSearch {
             clearTimeout(timeout);
             timeout = null;
         }
-        currentKeywords = keywords;
+        currentKeywords = keywords;        
         function getCustomerData(){
-            let params={role:"customer",akName:keywords};
+            let params={role:"customer",keywords:keywords,pageSize:20,pageNumber:1,sortField:'create_date',sortDirection:'desc'};
             HttpUtil.get("/api/user/list",{params:params}).then(function(response){
                 if(response && currentKeywords===keywords){
                     console.log(response.list);

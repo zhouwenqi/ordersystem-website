@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Spin, Tabs, Message, Icon, Col,Row,Button,Breadcrumb, Table } from 'antd';
+import { Spin, Tabs, Icon, Row,Button,Breadcrumb, Table } from 'antd';
 import Moment from 'moment';
 import OrderType from '../../common/OrderType';
 import OrderStatus from '../../common/OrderStatus';

@@ -2,9 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { 
     Form, Input,Tabs, Button,Spin,
-     Icon, Row, Message, Checkbox,
-     Cascader, DatePicker,Col,Modal,
-     TimePicker,Select,InputNumber
+     Row, Cascader, DatePicker,Col,Modal,
+     Select,InputNumber
 } from 'antd';
 import Moment from 'moment';
 import AreaData from '../../common/AreaData';
@@ -107,12 +106,19 @@ class CreateOrderForm extends BasePage {
             }
         });
     }
+
+    componentDidMount = ()=>{
+        if(window.config.user.role==='manager' || window.config.user.role==='employee'){
+            this.handlerSearchCustomer("");
+        }
+        
+    }
     
     /**
      * 查询客户列表
      */
     handlerSearchCustomer = (keywords)=>{
-        let base = this;
+        let base = this;        
         ChSearch.customerList(keywords,function(data){
             console.log("data:",data);
             base.setState({customerData:data})

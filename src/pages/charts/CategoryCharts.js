@@ -1,8 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
 import { 
-    Form,Icon, Row, Table,Modal,Col,Select,DatePicker,Button,Radio,message
+    Form, Row, Col,Select,DatePicker,Button,Radio,message
 } from 'antd';
 import { Chart, Tooltip, Axis, Legend, Bar} from 'viser-react';
 import HttpUtils from '../../utils/HttpUtils';
@@ -11,9 +9,8 @@ import './charts.css';
 import ChSearch from '../../components/ChSearch';
 import PriceType from '../../common/PriceType';
 
-const DataSet = require('@antv/data-set');
 const Option = Select.Option;
-const { RangePicker,MonthPicker  } = DatePicker;
+const { MonthPicker  } = DatePicker;
 
 /**
  * 分类帐务统计

@@ -113,7 +113,7 @@ class EditUserFrom extends React.Component {
                     loading:false,
                 });                
             }
-            if(window.config.user.rolw==='manager'){
+            if(window.config.user.role==='manager'){
                 base.getBranchsData();
             }
             
