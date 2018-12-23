@@ -45,7 +45,7 @@ class LogListForm extends React.Component{
         this.searchLog(this.state.pageInfo);
     }    
     /**
-     * 查询用户
+     * 查询日志
      */
     searchLog=(params={})=>{
         const base = this;       

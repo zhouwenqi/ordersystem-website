@@ -18,6 +18,9 @@ import EditBranch from './branchs/EditBranch';
 import UserList from './users/UserList';
 import CreateUser from './users/CreateUser';
 import LogList from './setup/LogList';
+import CreateNote from './setup/CreateNote';
+import EditNode from './setup/EditNote';
+import NoteList from './setup/NoteList';
 import AmountCharts from './charts/AmountCharts';
 import CategoryCharts from './charts/CategoryCharts';
 
@@ -142,8 +145,12 @@ class MainPage extends React.Component {
                 <Route path="/dash/branch/add" component={CreateBranch} />
                 <Route path="/dash/branch/edit/:id" component={EditBranch} />
                 <Route path="/dash/log/list" component={LogList} />
+                <Route path="/dash/note/list" component={NoteList} />
+                <Route path="/dash/note/create" component={CreateNote} />
+                <Route path="/dash/note/edit/:id" component={EditNode} />
                 <Route path="/dash/charts/amount" component={AmountCharts} />
                 <Route path="/dash/charts/category" component={CategoryCharts} />
+                
                 </Content>,
                 isAdmin:isAdmin,
                 isManager:isManager,
@@ -203,6 +210,9 @@ class MainPage extends React.Component {
             subSetupAdminMenu = <SubMenu key="setting" title={<span><Icon type="setting" />系统设置</span>}>                
                 <Menu.Item key="dash.log.list">
                     <Link to='/dash/log/list'>系统日志</Link>
+                </Menu.Item>
+                <Menu.Item key="dash.note.list">
+                    <Link to='/dash/note/list'>系统公告</Link>
                 </Menu.Item>
             </SubMenu>;
             subChartAdminMenu = <SubMenu key="barChart" title={<span><Icon type="bar-chart" />统计报表</span>}>                
