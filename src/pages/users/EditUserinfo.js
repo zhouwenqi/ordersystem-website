@@ -194,12 +194,6 @@ class EditUserFrom extends React.Component {
             </ButtonGroup>
         );
 
-        const radioStyle = {
-            display: 'block',
-            height: '30px',
-            lineHeight: '30px',
-        };
-
         let adminUserInfo = undefined;
         if(window.config.user.role==='manager'){
             adminUserInfo = <React.Fragment>

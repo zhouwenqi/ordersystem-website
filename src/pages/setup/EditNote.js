@@ -3,13 +3,15 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { 
     Form, Input,Tabs, Button,Spin,Breadcrumb,
-    Row, Message, Col
+    Row, Message, Col,Modal
 } from 'antd';
 import HttpUtils from '../../utils/HttpUtils';
 
 const TabPane = Tabs.TabPane;
 const FormItem = Form.Item;
 const {TextArea} = Input;
+const ButtonGroup = Button.Group;
+const Confirm = Modal.confirm;
 
 const formItemLayout = {
     labelCol: {
@@ -106,9 +108,45 @@ class EditNoteFrom extends React.Component {
             
         })
     }
+    /**
+     * 后退
+     */
+    onBack=()=>{
+        window.history.back();
+    }
+
+    /**
+     * 删除公告
+     */
+    onDeleteNote(){
+        const base = this;
+        const data = {id:base.state.noteInfo.id};
+        Confirm({
+            title:"删除公告",            
+            content:"确定要删除这条公告信息吗？",
+            onOk:()=>{                
+                console.log("data:"+data);
+                HttpUtils.post('/api/note/delete',data).then(function(response){
+                    base.context.menuRoute('dash.note.list');
+                    base.props.history.push("/dash/note/list");
+                });
+            },
+            onCancel:()=>{
+
+            }
+        });
+    }
+    
     render=()=>{
         const {getFieldDecorator} = this.props.form;
         const note = this.state.noteInfo;
+        // Tabs 扩展Button  
+        const extOperations = (
+            <ButtonGroup>
+                <Button icon="left" title="返回" onClick={this.onBack}></Button>
+                <Button icon="delete" title="删除公告" onClick={this.onDeleteNote.bind(this)}></Button>
+            </ButtonGroup>
+        );
         return (<div>
             <Spin spinning={this.state.loading}>   
                 <Breadcrumb style={{marginTop:"10px"}}>
@@ -118,7 +156,7 @@ class EditNoteFrom extends React.Component {
                     <Breadcrumb.Item>修改公告</Breadcrumb.Item>
                 </Breadcrumb>             
                 <div className="user-form">
-                    <Tabs type="card">
+                    <Tabs type="card" tabBarExtraContent={extOperations}>
                         <TabPane tab="修改公告信息" key="basic-info">
                             <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>                        
                                 <Row>
@@ -139,7 +177,7 @@ class EditNoteFrom extends React.Component {
                                                     label="公告内容">
                                                     {getFieldDecorator('content',
                                                     {rules:[{required:true,message:'请输入公告内容',}],initialValue:note.content
-                                                    })(<TextArea type="textarea" rows={10} />)} 
+                                                    })(<TextArea placeholder="请输入公告内容" type="textarea" rows={10} />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row>                                        

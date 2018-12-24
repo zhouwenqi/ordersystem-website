@@ -10,6 +10,7 @@ import HttpUtils from '../../utils/HttpUtils';
 const TabPane = Tabs.TabPane;
 const FormItem = Form.Item;
 const {TextArea} = Input;
+const ButtonGroup = Button.Group;
 
 const formItemLayout = {
     labelCol: {
@@ -72,8 +73,8 @@ class CreateNoteFrom extends React.Component {
         const base = this;
         base.setState({
             loading:true,
-        })
-        HttpUtils.post('/api/note/create',params).then(function(response){
+        })        
+        HttpUtils.post('/api/note/update',params).then(function(response){
             base.setState({
                 loading:false
             });
@@ -85,8 +86,20 @@ class CreateNoteFrom extends React.Component {
             
         })
     }
+    /**
+     * 后退
+     */
+    onBack=()=>{
+        window.history.back();
+    }
     render=()=>{
         const {getFieldDecorator} = this.props.form;
+        // Tabs 扩展Button  
+        const extOperations = (
+            <ButtonGroup>
+                <Button icon="left" title="返回" onClick={this.onBack}></Button>
+            </ButtonGroup>
+        );
         return (<div>
             <Spin spinning={this.state.loading}>   
                 <Breadcrumb style={{marginTop:"10px"}}>
@@ -96,7 +109,7 @@ class CreateNoteFrom extends React.Component {
                     <Breadcrumb.Item>添加公告</Breadcrumb.Item>
                 </Breadcrumb>             
                 <div className="user-form">
-                    <Tabs type="card">
+                    <Tabs type="card" tabBarExtraContent={extOperations}>
                         <TabPane tab="添加公告信息" key="basic-info">
                             <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>                        
                                 <Row>
@@ -117,7 +130,7 @@ class CreateNoteFrom extends React.Component {
                                                     label="公告内容">
                                                     {getFieldDecorator('content',
                                                     {rules:[{required:true,message:'请输入公告内容',}]
-                                                    })(<TextArea type="textarea" rows={10} />)} 
+                                                    })(<TextArea placeholder="请输入公告内容" type="textarea" rows={10} />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row>                                        
