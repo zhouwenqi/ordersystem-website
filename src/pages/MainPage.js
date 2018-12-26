@@ -21,6 +21,7 @@ import LogList from './setup/LogList';
 import CreateNote from './setup/CreateNote';
 import EditNode from './setup/EditNote';
 import NoteList from './setup/NoteList';
+import Index from './home/Index';
 import AmountCharts from './charts/AmountCharts';
 import CategoryCharts from './charts/CategoryCharts';
 
@@ -130,8 +131,8 @@ class MainPage extends React.Component {
             base.setState({
                 routes:<Content>                          
                 <Route path="/" exact component={OrderList} />
-                <Route path="/dash" exact component={OrderList} />
-                {OrderListRoute}
+                <Route path="/dash" exact component={Index} />
+                {OrderListRoute}                
                 <Route path="/dash/order/create" component={CreateOrder} /> 
                 <Route path="/dash/order/view/:id" component={ViewOrder} />             
                 <Route path="/dash/order/edit/:id" component={EditOrder} />
@@ -197,6 +198,7 @@ class MainPage extends React.Component {
         let subBranchAdminMenu = undefined;
         let subSetupAdminMenu = undefined;
         let subChartAdminMenu = undefined;
+        let subHomeAdminMenu = undefined;
         if(this.state.isAdmin){
             subMainMenuTag = "订单管理"            
             subBranchAdminMenu = <SubMenu key="branches" title={<span><Icon type="branches" />网点管理</span>}>                
@@ -223,6 +225,9 @@ class MainPage extends React.Component {
                     <Link to='/dash/charts/category'>分类帐务统计</Link>
                 </Menu.Item>
             </SubMenu>;
+            subHomeAdminMenu = <Menu.Item key="dash">                    
+                    <Link to='/dash'><Icon type="home" />首页</Link>
+                </Menu.Item>
         }
         if(this.state.isManager){            
             subUserAdminMenu = <SubMenu key="users" title={<span><Icon type="team" />用户管理</span>}>                
@@ -264,6 +269,7 @@ class MainPage extends React.Component {
                 <Layout>
                     <Sider width={200}>
                         <Menu onClick={this.handlerClick} mode="inline" selectedKeys={[this.state.currentMenuIndex]} defaultOpenKeys={['orders']} style={{ height: '100%', paddingTop:14}}>
+                            {subHomeAdminMenu}
                             <SubMenu key="orders" title={<span><Icon type="audit" />{subMainMenuTag}</span>}>
                                 <Menu.Item key="dash.order">
                                     <Link to='/dash/order'>订单列表</Link>

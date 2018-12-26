@@ -121,11 +121,11 @@ class AmountChartsForm extends React.Component{
                 </Form>
                 <div className="charts-box">
                     <div className="charts-title">帐务信息统计</div>
-                    <Chart forceFit height={500} data={data}>
+                    <Chart padding={[60,60]} forceFit height={500} data={data}>
                         <Tooltip />
                         <Axis />
-                        <Legend />
-                        <Bar position="label*合计" />
+                        <Legend position="top-center" />
+                        <Bar position="label*合计" color="label" />
                     </Chart>
                 </div>
             </div>
