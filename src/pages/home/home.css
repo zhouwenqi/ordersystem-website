@@ -68,3 +68,27 @@
 .card-grid-row:first-child span{
     font-size: 42px;
 }
+.card-table {
+    padding:14px;
+    overflow: auto;
+}
+.card-table table{
+    width:100%;
+    border-collapse: collapse;
+    border-spacing: 0;    
+}
+.card-table td{
+    padding: 6px 12px;
+}
+.card-table tr td:first-child{
+    width:120px;
+}
+.card-table tr td:last-child{
+    width:240px;
+    text-align: right;
+}
+.noteNull{
+    height: 240px;
+    line-height: 260px;
+    text-align: center;
+}

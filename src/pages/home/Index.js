@@ -2,32 +2,71 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { 
-    Form, Input,Tabs, Button,Spin,Card,
-     Row, Message, Radio, Col,Modal,Icon,
-     Select
+     Row, Col,Icon,Spin
+     
 } from 'antd';
 import { Chart, Tooltip, Axis, Legend, Bar } from 'viser-react';
 import HttpUtils from '../../utils/HttpUtils';
-import ChSearch from '../../components/ChSearch';
+import WebUtils from '../../utils/WebUtils';
+import axios from 'axios';
+import BasePage from '../BasePage';
+import OrderStatusTotal from '../../components/OrderStatusTotal';
 import './home.css';
 /**
  * 首页
  */
-class Index extends React.Component {
+class Index extends BasePage {
     constructor(props,context) {
         super(props,context);
         this.state = {
             loading:false,
+            userTotal:[],
+            orderTotal:[
+                {
+                    "count": 0,
+                    "tag": "待派单",
+                    "status": "pending"
+                },
+                {
+                    "count": 0,
+                    "tag": "跟进中",
+                    "status": "ongoing"
+                },
+                {
+                    "count": 0,
+                    "tag": "待验收",
+                    "status": "waitCheck"
+                },
+                {
+                    "count": 0,
+                    "tag": "已完结",
+                    "status": "complete"
+                },
+                {
+                    "count": 0,
+                    "tag": "已取消",
+                    "status": "cancel"
+                },
+                {
+                    "count": 0,
+                    "tag": "全部订单",
+                    "status": "all"
+                },
+                {
+                    "count": 0,
+                    "tag": "新订单",
+                    "status": "new"
+                }
+            ],
+            noteInfo:{
+                content:<div className="noteNull">暂无公告</div>,
+                title:undefined,
+                createDate:undefined,            
+            },
+            orderEventData:[],
         }
     }
-    // 判断是否有基本权限
-    getIsBaseAccess = ()=>{
-        const user = window.config.user; 
-        if(user.role==='follow' || user.role==='manager' || user.rolw==='employee'){
-            return true;
-        }
-        return false;
-    }
+    
     static contextTypes = {
         menuRoute:PropTypes.func
     }
@@ -36,22 +75,62 @@ class Index extends React.Component {
         if(!this.getIsBaseAccess()){
             base.context.menuRoute('dash.order');
             base.props.history.push("/dash/order");
+        }else{
+            this.getIndexData();
         }
     }
+
+    getIndexData=()=>{        
+        const base = this;     
+        base.setState({
+            loading:true
+        })               
+        // 获取订单统计数据
+        let requests = [HttpUtils.get("/api/order/home/total")];
+        // 获取用户信息统计              
+        requests.push(HttpUtils.get("/api/user/home/total"));
+        // 获取公告信息
+        requests.push(HttpUtils.get("/api/note/home"));
+        // 获取订单事件信息
+        requests.push(HttpUtils.get("/api/order/event/home"));
+        axios.all(requests).then(axios.spread(function(orderTotal,userTotal,noteInfo,orderEventInfo){                    
+            base.setState({
+                loading:false,
+                userTotal:userTotal.chartData,
+                orderTotal:orderTotal.total,
+                noteInfo:noteInfo.note,
+                orderEventData:orderEventInfo.list,
+            });
+        }));          
+        
+    }
+
     render = ()=>{
         let bodyHtml = undefined;
-        if(this.getIsBaseAccess()){
-            const userData = [
-                {"label":"普通用户","数量":0},
-                {"label":"客户","数量":40},
-                {"label":"工程人员","数量":15},
-                {"label":"网点负责人","数量":5},
-                {"label":"内部人员","数量":12},
-                {"label":"跟单员","数量":0},
-                {"label":"管理员","数量":4},
-            ];
+        const noteInfo = this.state.noteInfo;
+        const orderTotal = this.state.orderTotal;
+        let orderEventHtml = <div style={{height:"350px",lineHeight:"350px"}}>暂无信息</div>;
+        const orderEventData = this.state.orderEventData;
+        if(orderEventData && orderEventData.length>0){
+            let trs = [];
+            orderEventData.map((item,index)=>{
+                trs.push(<tr key={index}>
+                    <td><Link to={'/dash/order/view/'+item.orderId}>{item.orderSn}</Link></td>
+                    <td>{WebUtils.getTrimString(item.description,20)}</td>
+                    <td>{item.eventTime}</td>
+                </tr>);
+            })
+            orderEventHtml = <table><tbody>{trs}</tbody></table>;
+        }
 
-            bodyHtml = <div className="home-box">
+        let noteTitle = "最新公告";
+        if(noteInfo){
+            noteTitle += " - " + noteInfo.title;
+        }
+
+        if(this.getIsBaseAccess()){
+            bodyHtml = 
+            <div className="home-box">
                 <Row gutter={24}>
                     <Col span={12}>
                         <div className="card-box" style={{height:"300px"}}>
@@ -61,36 +140,15 @@ class Index extends React.Component {
                             </div>
                             <div className="card-grid">
                                 <div className="card-grid-row" style={{height:"160px"}}>                                    
-                                    <div orderType="new" style={{width:"50%",paddingTop:"30px"}} className="grid-item">
-                                        <label>新订单</label><br />
-                                        <span style={{color:"#46f0ff"}}>15</span>
-                                    </div>
-                                    <div orderType="all" style={{width:"50%",paddingTop:"30px"}} className="grid-item">
-                                        <label>全部订单</label><br />
-                                        <span style={{color:"#ff5b5b"}}>343</span>
-                                    </div>
+                                    <OrderStatusTotal data={orderTotal[6]} />
+                                    <OrderStatusTotal data={orderTotal[5]} />
                                 </div> 
                                 <div className="card-grid-row" style={{height:"100px"}}>                                    
-                                    <div orderType="pending" style={{flex:"1"}} className="grid-item">
-                                        <label>待派单</label><br />
-                                        <span style={{color:"#f59e21"}}>3</span>
-                                    </div>
-                                    <div orderType="ongoing" style={{flex:"1"}} className="grid-item">
-                                        <label>跟进中</label><br />
-                                        <span style={{color:"#1890ff"}}>1564</span>
-                                    </div>
-                                    <div orderType="waitCheck" style={{flex:"1"}} className="grid-item">
-                                        <label>待验收</label><br />
-                                        <span style={{color:"#bc15aa"}}>87</span>
-                                    </div>
-                                    <div orderType="complete" style={{flex:"1"}} className="grid-item">
-                                        <label>已完结</label><br />
-                                        <span style={{color:"#19bc15"}}>329</span>
-                                    </div>
-                                    <div orderType="cancel" style={{flex:"1"}} className="grid-item">
-                                        <label>已取消</label><br />
-                                        <span style={{color:"#eeeeee"}}>852</span>
-                                    </div>
+                                    <OrderStatusTotal data={orderTotal[0]} />
+                                    <OrderStatusTotal data={orderTotal[1]} />
+                                    <OrderStatusTotal data={orderTotal[2]} />
+                                    <OrderStatusTotal data={orderTotal[3]} />
+                                    <OrderStatusTotal data={orderTotal[4]} />                                    
                                 </div>                               
                             </div>
                         </div>    
@@ -101,11 +159,11 @@ class Index extends React.Component {
                             </div>
                             <div className="card-charts">
                                 <div className="charts-title">用户权限分类</div>
-                                <Chart padding={[40,40]} forceFit height={300} data={userData}>
+                                <Chart padding={[40,40]} forceFit height={300} data={this.state.userTotal}>
                                     <Tooltip />
                                     <Axis />
                                     <Legend position="top-center" />
-                                    <Bar position="label*数量" color="label" />
+                                    <Bar position="role*count" color="role" />
                                 </Chart>
                             </div>
                         </div>                    
@@ -113,65 +171,27 @@ class Index extends React.Component {
                     <Col span={12}>
                         <div className="card-box" style={{height:"300px"}}>
                             <div className="card-head">
-                                <div className="card-head-left"><Icon style={{color:"#f95c06",marginRight:"12px"}} type="flag"></Icon>最新公告</div>
-                                <div className="card-head-right"><label>2018/12/25 14:50</label></div>
+                                <div className="card-head-left"><Icon style={{color:"#f95c06",marginRight:"12px"}} type="flag"></Icon>{noteTitle}</div>
+                                <div className="card-head-right"><label>{noteInfo.createDate}</label></div>
                             </div>
                             <div className="card-content">
-                                <div>
-                                In order to simulate the procedure, the temperature ofOxygeu into the stove has to follow the tracks of coal's precisely. 为真实地仿真这个过程，必须使进入护中的氧气温度高精度地跟踪煤温变化。www.dictall.com4Follow the tracks of statistic and analyses to ventilation system reliability running state, set up a suit of reliability evaluating indexes 'system adapted to it firstly; 通过对矿井通风系统可靠性运行状态的跟踪统计和分析，首先建立了一套适合于矿井通风系统可靠性评价指标体系；dict.cnki.net5It follow the tracks of new progress and development tendency of future for international material and heat treating technology. It is combined with national condition in China. It is primarily analysed and searched that for development blue drawing in fixture of vacuum heat treating technology in China. 跟踪国际材料热处理技术的最新进展和未来发展趋势，结合我国国情，对我国真空热处理的未来发展兰图，提出了初步的分析探讨。
-                                </div>
-                                <div style={{textAlign:"right"}}>
-                                <span>发布帐号：18665111530</span>
-                                </div>                            
+                                <div>{noteInfo.content}</div>                           
                             </div>
                         </div>
-                        <div className="card-box" style={{height:"391px",marginTop:"20px"}}>
+                        <div className="card-box" style={{marginTop:"20px"}}>
                             <div className="card-head">
                                 <div className="card-head-left"><Icon style={{color:"#8c36c3",marginRight:"12px"}} type="rocket"></Icon>订单最新跟踪状态</div>
-                                <div className="card-head-right"><label>2018/12/25 14:50</label></div>
+                                <div className="card-head-right"><label></label></div>
                             </div>
-                            <div className="card-table">
-                                <table>                                    
-                                    <tbody>
-                                        <tr>
-                                            <td><a href="#">4234242083</a></td>
-                                            <td>在要的粉的爱你的有的伯有</td>
-                                            <td>2018/12/26 23:50:58</td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#">4234242083</a></td>
-                                            <td>在要的粉的爱你的有的伯有</td>
-                                            <td>2018/12/26 23:50:58</td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#">4234242083</a></td>
-                                            <td>在要的粉的爱你的有的伯有</td>
-                                            <td>2018/12/26 23:50:58</td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#">4234242083</a></td>
-                                            <td>在要的粉的爱你的有的伯有</td>
-                                            <td>2018/12/26 23:50:58</td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#">4234242083</a></td>
-                                            <td>在要的粉的爱你的有的伯有</td>
-                                            <td>2018/12/26 23:50:58</td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#">4234242083</a></td>
-                                            <td>在要的粉的爱你的有的伯有</td>
-                                            <td>2018/12/26 23:50:58</td>
-                                        </tr>
-                                    </tbody>
-                                </table>                            
+                            <div className="card-table" style={{height:"350px"}}>
+                                {orderEventHtml}                          
                             </div>
                         </div>
                     </Col>                    
                 </Row>
-            </div>
+            </div>            
         }
-        return(<div>{bodyHtml}</div>)
+        return(<Spin spinning={this.state.loading}>{bodyHtml}</Spin>)
     }
 }
 export default Index;

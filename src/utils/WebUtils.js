@@ -78,6 +78,14 @@ const WebUtils = {
         }
         var argsUrl = args.join("&");
         return argsUrl;
+    },
+    getTrimString:(text,length)=>{
+        let content = text.substring(0,length);
+        if(text.length>length){
+            content += "...";
+        }
+        return content;
+
     }
 }
 export default WebUtils;
