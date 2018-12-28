@@ -28,6 +28,8 @@ class NoteListForm extends React.Component {
                 sortField:"create_date",
                 sortDirection:"desc",                
             },       
+            viewNode:{},
+            isViewNode:false,
             dataSource:[],
             loading:false
         };
@@ -38,11 +40,13 @@ class NoteListForm extends React.Component {
     getNoteContent(text){
         return <label title={text}>{text.substring(0,30)+'...'}</label>;
     } 
+    getNoteTitle(text,record){
+        return <a href="javascript:;" onClick={this.onViewNote.bind(this,record)}>{text}</a>;
+    }
     /**
      * 返回列表中的操作按钮
      */
     getOperationMenus=(record)=>{
-        const user = window.config.user;
         const editBtn = <Link to={'/dash/note/edit/'+record.id} className="item-a" title="修改"><Icon type="edit" theme="outlined" /></Link>;
         let deleteBtn = <a className="item-a delete" onClick={this.onDeleteNote.bind(this,record.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>;        
         return (<Row>{editBtn}{deleteBtn}</Row>);
@@ -50,7 +54,7 @@ class NoteListForm extends React.Component {
     componentWillMount = () =>{
         // 表格列头
         this.dataColumns = [
-            {title:'公告标题',sorter: true,dataIndex:'title'},
+            {title:'公告标题',sorter: true,dataIndex:'title',render:(text,record)=>(this.getNoteTitle(text,record))},
             {title:'公告类型',width:200,sorter: true,dataIndex:'type',render:(text)=>(WebUtils.getEnumTag(NoteType,text))},
             {title:'公告内容',sorter: false,dataIndex:'content',render:(text)=>(this.getNoteContent(text))},           
             {title:'帐号',sorter: true,dataIndex:'uid'},
@@ -118,6 +122,23 @@ class NoteListForm extends React.Component {
 
             }
         });
+    }
+    /**
+     * 查看公告
+     */
+    onViewNote=(note)=>{
+        this.setState({
+            viewNode:note,
+            isViewNode:true,
+        })
+    }
+    /**
+     * 隐藏公告弹窗
+     */
+    onHideNote=()=>{
+        this.setState({
+            isViewNode:false,
+        })
     }
     /**
      * 切换页码
@@ -195,6 +216,10 @@ class NoteListForm extends React.Component {
                 </Row>                
             </Form>
             <Table locale={locale} footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
+            <Modal title={this.state.viewNode.title} centered visible={this.state.isViewNode} onOk={()=>{this.onHideNote()}} onCancel={()=>{this.onHideNote()}}>
+                <div style={{lineHeight:"22px"}}>{WebUtils.getReaplceChar(this.state.viewNode.content)}</div>
+                <div style={{marginTop:"10px",fontSize:"10px"}}><Icon type="schedule" style={{color:"#bbbbbb"}} /><span style={{color:"#bbbbbb",marginLeft:"10px"}}>{this.state.viewNode.createDate}</span></div>
+            </Modal>
         </div>)
     }  
 }

@@ -70,6 +70,7 @@ class CreateOrderForm extends BasePage {
      */
     submitOrder = (data) =>{
         data.assignDate = data.assignDate.format("YYYY-MM-DD");
+        data.orderTime = data.orderTime.format("YYYY-MM-DD");
         if(data.areas.length>0){
             data.province = data.areas[0];
         }
@@ -80,8 +81,7 @@ class CreateOrderForm extends BasePage {
             data.area = data.areas[2];
         }
         // 设置授理时间
-        data.acceptDate = Moment().format("YYYY-MM-DD");
-
+        data.acceptDate = Moment().format("YYYY-MM-DD");       
         
         this.setState({
             loading:true,
@@ -189,7 +189,17 @@ class CreateOrderForm extends BasePage {
                                                 label="订单工期">
                                                 {getFieldDecorator('orderTime',
                                                 {rules:[{required:false}]
-                                                })(<Input type="text" placeholder="请输入订单工期" />)} 
+                                                })(<DatePicker placeholder="选择订单工期" />)} 
+                                            </FormItem>                    
+                                        </Col>                            
+                                    </Row>
+                                    <Row>
+                                        <Col span={24}>
+                                            <FormItem {...formItemLayout}
+                                                label="工期说明">
+                                                {getFieldDecorator('timeDescription',
+                                                {rules:[{required:false}]
+                                                })(<Input type="text" placeholder="请输入工期说明" />)} 
                                             </FormItem>                    
                                         </Col>                            
                                     </Row>

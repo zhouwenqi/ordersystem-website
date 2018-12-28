@@ -71,6 +71,7 @@ class MainPage extends React.Component {
         routes:<Content></Content>,
         isAdmin:false,
         isManager:false,
+        isFollow:false,
         isLogin:false,
         isFullScreen:false,
     }
@@ -125,7 +126,8 @@ class MainPage extends React.Component {
             let OrderListRoute = <Route path="/dash/order" exact component={OrderList} />;
             const isManager = window.config.user.role==='manager';
             const isAdmin = window.config.user.role==='manager' || window.config.user.role==='employee';
-            if(isAdmin){
+            const isFollow = window.config.user.role==='follow';
+            if(isAdmin || isFollow){
                 OrderListRoute = <Route path="/dash/order" exact component={OrderManagerList} />;
             }
             base.setState({
@@ -155,6 +157,7 @@ class MainPage extends React.Component {
                 </Content>,
                 isAdmin:isAdmin,
                 isManager:isManager,
+                isFollow:isFollow,
                 isLogin:true,
             })
 
@@ -199,6 +202,11 @@ class MainPage extends React.Component {
         let subSetupAdminMenu = undefined;
         let subChartAdminMenu = undefined;
         let subHomeAdminMenu = undefined;
+        let creatOrderMenu = <Menu.Item key="dash.order.create">
+            <Link to='/dash/order/create'>创建订单</Link>
+        </Menu.Item>;
+
+        // 后台操作管理员菜单
         if(this.state.isAdmin){
             subMainMenuTag = "订单管理"            
             subBranchAdminMenu = <SubMenu key="branches" title={<span><Icon type="branches" />网点管理</span>}>                
@@ -209,14 +217,17 @@ class MainPage extends React.Component {
                     <Link to='/dash/branch/add'>添加网点</Link>
                 </Menu.Item>
             </SubMenu>;
-            subSetupAdminMenu = <SubMenu key="setting" title={<span><Icon type="setting" />系统设置</span>}>                
-                <Menu.Item key="dash.log.list">
-                    <Link to='/dash/log/list'>系统日志</Link>
-                </Menu.Item>
-                <Menu.Item key="dash.note.list">
-                    <Link to='/dash/note/list'>系统公告</Link>
-                </Menu.Item>
-            </SubMenu>;
+            // 如果是管理员
+            if(this.state.isManager){
+                subSetupAdminMenu = <SubMenu key="setting" title={<span><Icon type="setting" />系统设置</span>}>                
+                    <Menu.Item key="dash.log.list">
+                        <Link to='/dash/log/list'>系统日志</Link>
+                    </Menu.Item>
+                    <Menu.Item key="dash.note.list">
+                        <Link to='/dash/note/list'>系统公告</Link>
+                    </Menu.Item>
+                </SubMenu>;
+            }
             subChartAdminMenu = <SubMenu key="barChart" title={<span><Icon type="bar-chart" />统计报表</span>}>                
                 <Menu.Item key="dash.charts.amount">
                     <Link to='/dash/charts/amount'>帐务信息统计</Link>
@@ -224,21 +235,25 @@ class MainPage extends React.Component {
                 <Menu.Item key="dash.charts.category">
                     <Link to='/dash/charts/category'>分类帐务统计</Link>
                 </Menu.Item>
-            </SubMenu>;
+            </SubMenu>;    
+            subUserAdminMenu = <SubMenu key="users" title={<span><Icon type="team" />用户管理</span>}>                
+            <Menu.Item key="dash.user.list">
+                <Link to='/dash/user/list'>用户列表</Link>
+            </Menu.Item>
+            <Menu.Item key="dash.user.add">
+                <Link to='/dash/user/create'>添加用户</Link>
+            </Menu.Item>
+        </SubMenu>;         
+        }
+        // 如果是操作管理或者跟单员
+        if(this.state.isAdmin || this.state.isFollow){
             subHomeAdminMenu = <Menu.Item key="dash">                    
                     <Link to='/dash'><Icon type="home" />首页</Link>
-                </Menu.Item>
+            </Menu.Item>
         }
-        if(this.state.isManager){            
-            subUserAdminMenu = <SubMenu key="users" title={<span><Icon type="team" />用户管理</span>}>                
-                <Menu.Item key="dash.user.list">
-                    <Link to='/dash/user/list'>用户列表</Link>
-                </Menu.Item>
-                <Menu.Item key="dash.user.add">
-                    <Link to='/dash/user/create'>添加用户</Link>
-                </Menu.Item>
-            </SubMenu>;
-            
+        // 跟单员不能创建订单
+        if(this.state.isFollow){
+            creatOrderMenu = undefined;
         }
         let topInfo = undefined;
         let fullScreen = <a href="javascript:;" style={{marginRight:"10px"}} onClick={this.onFullScreen}><Icon title="全屏" type="fullscreen" /></a>
@@ -274,9 +289,7 @@ class MainPage extends React.Component {
                                 <Menu.Item key="dash.order">
                                     <Link to='/dash/order'>订单列表</Link>
                                 </Menu.Item>
-                                <Menu.Item key="dash.order.create">
-                                    <Link to='/dash/order/create'>创建订单</Link>
-                                </Menu.Item>
+                                {creatOrderMenu}
                             </SubMenu>
                             {subBranchAdminMenu}
                             {subUserAdminMenu}

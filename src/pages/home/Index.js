@@ -109,7 +109,7 @@ class Index extends BasePage {
         let bodyHtml = undefined;
         const noteInfo = this.state.noteInfo;
         const orderTotal = this.state.orderTotal;
-        let orderEventHtml = <div style={{height:"350px",lineHeight:"350px"}}>暂无信息</div>;
+        let orderEventHtml = <div style={{height:"350px",lineHeight:"350px",textAlign:"center"}}>暂无信息</div>;
         const orderEventData = this.state.orderEventData;
         if(orderEventData && orderEventData.length>0){
             let trs = [];

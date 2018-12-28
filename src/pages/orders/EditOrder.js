@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import PropTypes, { bool } from 'prop-types';
 import { 
     Form, Input,Tabs, Button,Spin,Upload,
      Icon, Row, Message, Checkbox,Table,
@@ -59,6 +59,7 @@ class EditOrderForm extends BasePage {
         currentEnginner:undefined,
         isAdmin:false,
         isEdit:false,
+        isFollow:false,
         isNeedTraceUser:false,
         orderInfo:undefined,
         orderUserId:undefined,
@@ -150,10 +151,11 @@ class EditOrderForm extends BasePage {
                 const orderInfo = response.order; 
                 let isAdmin = false;
                 let isOrderEdit = orderInfo.orderStatus === 'pending';
-                if(user.role==='manager' || user.role==='employee'){
+                if(user.role==='manager' || user.role==='employee' || user.role==='follow'){
                     isOrderEdit = true;
                     isAdmin = true;
-                }                            
+                }        
+                const isFollow = user.role==='follow';
                 base.setState({                    
                     orderInfo:orderInfo,
                     loading:false,
@@ -163,16 +165,17 @@ class EditOrderForm extends BasePage {
                     orderEvents:orderInfo.orderEvents,
                     isEdit:isOrderEdit,
                     isAdmin:isAdmin,
+                    isFollow:isFollow,
                     isChecked:orderInfo.isChecked,
                     isInvoice:orderInfo.isInvoice,
                     isRefunds:orderInfo.isRefunds,
                 });   
                 
-                if(user.role==='manager' || user.role==='employee'){                
+                if(user.role==='manager' || user.role==='employee' || user.role==='follow'){                
                     // 获取网点数据
                     let requests = [HttpUtils.get("/api/branch/list")];
                     // 获取项目跟进人数据
-                    const trackParams = {role:"employee,manager"};               
+                    const trackParams = {role:"follow"};               
                     requests.push(HttpUtils.get("/api/user/list",{params:trackParams}));
                     axios.all(requests).then(axios.spread(function(branchData,trackData){                    
                         base.setState({
@@ -296,7 +299,6 @@ class EditOrderForm extends BasePage {
         if(data.areas.length>2){
             data.area = data.areas[2];
         }
-
         if(data.paymentTime){
             data.paymentTime = data.paymentTime.format("YYYY-MM-DD");
         }
@@ -308,6 +310,9 @@ class EditOrderForm extends BasePage {
         }
         if(data.refundsDate){
             data.refundsDate = data.refundsDate.format("YYYY-MM-DD");
+        }
+        if(data.orderTime){
+            data.orderTime = data.orderTime.format("YYYY-MM-DD");
         }
         
         data.id = this.props.match.params.id;        
@@ -622,7 +627,7 @@ class EditOrderForm extends BasePage {
             if(order.orderStatus==='pending'){
                 deleteBtn = <Button icon="undo" title="撤销订单" onClick={this.onCancelOrder.bind(this,order.id)}></Button>;
             }
-            if(this.state.isAdmin){
+            if(this.state.isAdmin && !this.state.isFollow){
                 deleteBtn = <Button icon="delete" title="删除订单" onClick={this.onRemoveOrder.bind(this,order.id)}></Button>
             }
             
@@ -645,7 +650,7 @@ class EditOrderForm extends BasePage {
                                         label="项目跟进人">
                                         {getFieldDecorator('trackUserId',
                                         {rules:[{required:this.state.isNeedTraceUser,message:'请选择项目跟进人',}],initialValue:order.trackUserId
-                                        })(<Select placeholder="请选择项目跟进人">
+                                        })(<Select disabled={this.state.isFollow} placeholder="请选择项目跟进人">
                                             {trackDatas}
                                         </Select>)} 
                                     </FormItem>                    
@@ -1053,8 +1058,18 @@ class EditOrderForm extends BasePage {
                                         <FormItem {...formItemLayout}
                                             label="订单工期">
                                             {getFieldDecorator('orderTime',
-                                            {rules:[{required:false}],initialValue:order.orderTime
-                                            })(<Input type="text" placeholder="请输入订单工期" />)} 
+                                            {rules:[{required:false}],initialValue:Moment(order.orderTime,"YYYY-MM-DD")
+                                            })(<DatePicker placeholder="选择订单工期" />)} 
+                                        </FormItem>                    
+                                    </Col>                            
+                                </Row>
+                                <Row>
+                                    <Col span={24}>
+                                        <FormItem {...formItemLayout}
+                                            label="工期说明">
+                                            {getFieldDecorator('timeDescription',
+                                            {rules:[{required:false}],initialValue:order.timeDescription
+                                            })(<Input type="text" placeholder="请输入工期说明" />)} 
                                         </FormItem>                    
                                     </Col>                            
                                 </Row>

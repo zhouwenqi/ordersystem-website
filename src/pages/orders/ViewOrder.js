@@ -76,7 +76,7 @@ class ViewOrder extends BasePage {
                 const user = window.config.user;
                 let isAdmin = false;
                 let isOrderEdit = response.order.orderStatus==='pending';
-                if(user.role==='manager' || user.role==='employee'){
+                if(user.role==='manager' || user.role==='employee' || user.role==='follow'){
                     isOrderEdit = true;
                     isAdmin = true;
                 }                
@@ -387,9 +387,13 @@ class ViewOrder extends BasePage {
                                 </tr>
                                 <tr>
                                     <th>订单工期：</th>
-                                    <td><span>{order.orderTime}</span></td>
-                                    <th rowSpan="4">服务内容：</th>
-                                    <td rowSpan="4"><span dangerouslySetInnerHTML={{__html:WebUtils.getReaplceChar(order.serviceContent)}}></span></td>
+                                    <td><span>{Moment(order.orderTime).format("YYYY-MM-DD")}</span></td>
+                                    <th rowSpan="5">服务内容：</th>
+                                    <td rowSpan="5"><span dangerouslySetInnerHTML={{__html:WebUtils.getReaplceChar(order.serviceContent)}}></span></td>
+                                </tr>
+                                <tr>
+                                    <th>工期说明：</th>
+                                    <td><span dangerouslySetInnerHTML={{__html:WebUtils.getReaplceChar(order.timeDescription)}}></span></td>                                
                                 </tr>
                                 <tr>
                                     <th>派单日期：</th>
