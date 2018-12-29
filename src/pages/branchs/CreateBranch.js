@@ -1,8 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { 
     Form, Input,Tabs, Button,Spin,
-     Row, Cascader, Col,Modal,
+     Row, Cascader, Col,Modal,Breadcrumb,
      Select
 } from 'antd';
 import AreaData from '../../common/AreaData';
@@ -113,10 +114,16 @@ class CreateBranchForm extends React.Component{
         });
         return (
             <Spin  spinning={this.state.loading}>
-                <div className="grid-form">
-                    <Tabs type="card">
-                        <TabPane tab="添加网点" key="basic-info">
-                            <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>                        
+                <Breadcrumb style={{marginTop:"10px"}}>
+                    <Breadcrumb.Item>控制台</Breadcrumb.Item>
+                    <Breadcrumb.Item>网点管理</Breadcrumb.Item>
+                    <Breadcrumb.Item><Link to="/dash/branch/list">网点列表</Link></Breadcrumb.Item>
+                    <Breadcrumb.Item>添加网点</Breadcrumb.Item>
+                </Breadcrumb>
+                <div className="branch-form">
+                    <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>
+                        <Tabs type="card">
+                            <TabPane tab="网点信息" key="basic-info">                                                    
                                 <Row>
                                     <Col span={12}>                                                     
                                         <Row>
@@ -145,7 +152,7 @@ class CreateBranchForm extends React.Component{
                                                     label="联系电话">
                                                     {getFieldDecorator('phone',
                                                     {rules:[{required:true,message:'请输入联系电话',}]
-                                                    })(<Input type="text" placeholder="请输入公司名称" />)} 
+                                                    })(<Input type="text" placeholder="请输入联系电话" />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row>
@@ -190,9 +197,45 @@ class CreateBranchForm extends React.Component{
                                         </Row>
                                     </Col>
                                 </Row>
-                            </Form>
-                        </TabPane>
-                    </Tabs>
+                            </TabPane>
+                            <TabPane tab="收款帐户" key="payment-info">                                                   
+                                <Row>
+                                    <Col span={12}>                                                     
+                                        <Row>
+                                            <Col span={24}>
+                                                <FormItem {...formItemLayout}
+                                                    label="收款户名">
+                                                    {getFieldDecorator('bankAccountName',
+                                                    {rules:[{required:false}]
+                                                    })(<Input type="text" placeholder="请输入收款户名" />)} 
+                                                </FormItem>                    
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={24}>
+                                                <FormItem {...formItemLayout}
+                                                    label="收款银行帐号">
+                                                    {getFieldDecorator('bankAccountCode',
+                                                    {rules:[{required:false}]
+                                                    })(<Input type="text" placeholder="请输入收款银行帐号" />)} 
+                                                </FormItem>                    
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={24}>
+                                                <FormItem {...formItemLayout}
+                                                    label="收款支行名称">
+                                                    {getFieldDecorator('bankName',
+                                                    {rules:[{required:false}]
+                                                    })(<Input type="text" placeholder="请输入收款支行名称" />)} 
+                                                </FormItem>                    
+                                            </Col>
+                                        </Row>
+                                    </Col>
+                                </Row>
+                            </TabPane>
+                        </Tabs>
+                    </Form>
                 </div>
             </Spin>
         )

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import PropTypes, { bool } from 'prop-types';
+import PropTypes from 'prop-types';
 import { 
     Form, Input,Tabs, Button,Spin,Upload,
      Icon, Row, Message, Checkbox,Table,
-     Cascader, DatePicker,Col,Modal,
+     Cascader, DatePicker,Col,Modal,Divider,
      Select,InputNumber,Breadcrumb
 } from 'antd';
 import Moment from 'moment';
@@ -68,7 +68,14 @@ class EditOrderForm extends BasePage {
         isRefunds:false,   
         statusFrameShow:false,
         loadingStatus:false,
-        pageInfo:{
+        pageProjectInfo:{
+            pageSize:20,
+            current:1,
+            total:0,
+            sortField:"create_date",
+            sortDirection:"desc",                
+        }, 
+        pageCheckInfo:{
             pageSize:20,
             current:1,
             total:0,
@@ -76,7 +83,8 @@ class EditOrderForm extends BasePage {
             sortDirection:"desc",                
         },       
         downloadUrl:undefined,
-        dataSource:[],
+        projectFileSource:[],
+        checkFileSource:[],
     }
     static contextTypes = {
         menuRoute:PropTypes.func
@@ -86,7 +94,7 @@ class EditOrderForm extends BasePage {
         this.dataColumns = [
             {title:'文件名',sorter: true,dataIndex:'name',render:(text,record)=>(this.getFileNameCell(text,record))},
             {title:'文件路径',sorter: true,dataIndex:'path'},
-            {title:'文件类型',sorter: true,dataIndex:'fileType'},
+            {title:'扩展名',sorter: true,dataIndex:'fileSuffix'},
             {title:'关联订单', width:200,sorter: true,dataIndex:'orderSn'},
             {title:'上传用户',sorter: true,dataIndex:'uid'},
             {title:'下载次数', width:100,sorter: true,dataIndex:'uploadCount'},
@@ -101,31 +109,47 @@ class EditOrderForm extends BasePage {
         return (<a href="javascript:;" onClick={this.onDownloadFile.bind(this,record.id)}>{text}</a>);
     }
     /**
-     * 返回列表中的操作按钮
+     * 返回项目文件列表中的操作按钮
      */
     getOperationMenus=(record)=>{
         let downBtn = <a className="item-a edit" onClick={this.onDownloadFile.bind(this,record.id)} href="javascript:;" title="下载"><Icon type="cloud-download" theme="outlined" /></a>;        
-        let deleteBtn = <a className="item-a delete" onClick={this.onDeleteFile.bind(this,record.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>;
+        let deleteBtn = <a className="item-a delete" onClick={this.onDeleteFile.bind(this,record.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>;        
         return (<Row>{downBtn}{deleteBtn}</Row>);
     }
-    getUploadConfig=()=>{
+    getUploadConfig=(fileType)=>{
         /**
          * 上传文件
          */
         const base = this;
         const uploadProps = {
             name: 'file',
-            action: window.config.apiUrl+'/api/order/file/upload?orderId='+this.state.orderInfo.id,
+            action: window.config.apiUrl+'/api/order/file/upload?orderId='+this.state.orderInfo.id+"&fileType="+fileType,
             headers: {
                 "ch-token": window.config.token,
             },
             onChange(info) {
+                console.log(info);
                 if (info.file.status !== 'uploading') {
                     console.log(info.file, info.fileList);
                 }
                 if (info.file.status === 'done') {
-                    Message.success(`${info.file.name} 文件上传成功`);
-                    base.searchFile();
+                    const response = info.file.response;                    
+                    if(response){
+                        if(response.code===200){
+                            Message.success(`${info.file.name} 文件上传成功`);
+                            if(fileType==='PROJECT'){
+                                base.searchProjectFile(base.state.pageProjectInfo);
+                            }else if(fileType==='CHECK'){
+                                base.searchCheckFile(base.state.pageCheckInfo);
+                            }
+                            
+                        }else{
+                            Message.error(`${info.file.name} 文件上传失败 ${response.msg}`);
+                        }
+                    }else{
+                        Message.error(`${info.file.name} 文件上传失败`);
+                    }                    
+                    
                 } else if (info.file.status === 'error') {
                     Message.error(`${info.file.name} 文件上传失败`);
                 }
@@ -186,8 +210,6 @@ class EditOrderForm extends BasePage {
                         if(orderInfo.branchId){
                             base.getEnginnerList(orderInfo.branchId);
                         }
-                        // 获取订单关联文件
-                        base.searchFile(base.state.pageInfo);
                         
                     }));          
                 }
@@ -202,28 +224,50 @@ class EditOrderForm extends BasePage {
     /**
      * 查询订单项目文件
      */
-    searchFile=(params={})=>{
+    searchProjectFile=(params={})=>{
         const base = this;
         params.orderId = this.state.orderInfo.id;
+        params.fileType = "PROJECT";
         HttpUtils.get("/api/order/file/list",{params:params}).then(function(response){
             if(response){
                 var pageInfo = response.pageInfo;
-                var pagination = {...base.state.pageInfo};
+                var pagination = {...base.state.pageProjectInfo};
                 pagination.total = pageInfo.total;
                 pagination.current = pageInfo.pageNumber;                
                 base.setState({
-                    dataSource:response.list,
-                    pageInfo:pagination,
+                    projectFileSource:response.list,
+                    pageProjectInfo:pagination,
                 })
             }
         });
     }
 
     /**
-     * 切换页码
+     * 查询订单验收文件
      */
-    handleTableChange=(pagination,filters,sorter) => {        
-        var pager = {...this.state.pageInfo};
+    searchCheckFile=(params={})=>{
+        const base = this;
+        params.orderId = this.state.orderInfo.id;
+        params.fileType="CHECK";
+        HttpUtils.get("/api/order/file/list",{params:params}).then(function(response){
+            if(response){
+                var pageInfo = response.pageInfo;
+                var pagination = {...base.state.pageCheckInfo};
+                pagination.total = pageInfo.total;
+                pagination.current = pageInfo.pageNumber;                
+                base.setState({
+                    checkFileSource:response.list,
+                    pageCheckInfo:pagination,
+                })
+            }
+        });
+    }
+
+    /**
+     * 项目文件切换页码
+     */
+    handleProjectChange=(pagination,filters,sorter) => {        
+        var pager = {...this.state.pageProjectInfo};
         pager.current = pagination.current;
         pager.pageNumber = pagination.current;
         if(sorter.field){
@@ -235,9 +279,55 @@ class EditOrderForm extends BasePage {
         }
         
         this.setState({
-            pageInfo:pager,            
+            pageProjectInfo:pager,            
         })
-        this.searchFile(pager);
+        this.searchProjectFile(pager);
+    }
+    /**
+     * 难收文件切换页码
+     */
+    /**
+     * 切换页码
+     */
+    handleCheckChange=(pagination,filters,sorter) => {        
+        var pager = {...this.state.pageCheckInfo};
+        pager.current = pagination.current;
+        pager.pageNumber = pagination.current;
+        if(sorter.field){
+            pager.sortDirection = sorter.order.replace("end","");
+            pager.sortField = WebUtils.getHumpString(sorter.field);
+        }else{
+            pager.sortDirection = "desc";
+            pager.sortField = "create_date"
+        }
+        
+        this.setState({
+            pageCheckInfo:pager,            
+        })
+        this.searchCheckFile(pager);
+    }
+    /**
+     * 文件列表Table脚注
+     */
+    getTableFooter=(key)=>{
+        if(key==='project-file-info'){
+            return (<label>共找到<span style={{color:"#1890ff"}}> {this.state.pageProjectInfo.total} </span>条项目文件信息</label>);
+        }else if(key==='check-file-info'){
+            return (<label>共找到<span style={{color:"#1890ff"}}> {this.state.pageCheckInfo.total} </span>条验收文件信息</label>);
+        }        
+    }
+
+    /**
+     * Tab切换事件
+     */
+    onTabChangeHandler=(key)=>{
+        const base = this;
+        if(key==='project-file-info'){
+            base.searchProjectFile(base.state.pageInfo);
+        }else if(key==='check-file-info'){
+            base.searchCheckFile(base.state.pageInfo);
+        }
+        console.log(key);
     }
 
     /**
@@ -389,10 +479,11 @@ class EditOrderForm extends BasePage {
      */
     onChangePaymentPrice=(e,tag)=>{       
         if(this.state.isAdmin){
-            let values = this.props.form.getFieldsValue(["routeServicePrice","branchBalancePrice","branchOtherPrice"]);        
-            values[tag]=e;
+            let values = this.props.form.getFieldsValue(["routeQuantity","routeServicePrice","branchBalancePrice","branchOtherPrice"]);        
+            values[tag] = e;
             this.props.form.setFieldsValue({
-                actualPaymentPrice:Math.floor(values.routeServicePrice) + Math.floor(values.branchBalancePrice) + Math.floor(values.branchOtherPrice),
+                branchBalancePrice:Math.floor(values.routeQuantity)*Math.floor(values.routeServicePrice),
+                actualPaymentPrice:Math.floor(values.routeQuantity)*Math.floor(values.routeServicePrice) + Math.floor(values.branchOtherPrice),
             });
         }
     }
@@ -621,7 +712,9 @@ class EditOrderForm extends BasePage {
             // 订单实时状态
             let TabPaneEvent = undefined;
             // 订单项目文件
-            let TabPaneFile = undefined;
+            let TabPaneProjectFile = undefined;
+            // 验收文件
+            let TabPaneCheckFile = undefined;
 
             let deleteBtn = undefined;
             if(order.orderStatus==='pending'){
@@ -760,6 +853,11 @@ class EditOrderForm extends BasePage {
                                         {rules:[{required:true,message:'请填写实际总额(默认为0)'}],initialValue:order.actualPrice
                                         })(<InputNumber min={0} precision={2} />)} 
                                     </FormItem>                    
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={24}>
+                                    <Divider dashed />
                                 </Col>
                             </Row>
                             <Row>
@@ -959,18 +1057,25 @@ class EditOrderForm extends BasePage {
                             </Row>
                         </Col>
                     </Row>
-                </TabPane>;
+                </TabPane>;                
+            }
 
-                TabPaneFile = <TabPane tab="项目文件" key="file-info">
+            TabPaneProjectFile =  <TabPane tab="项目资料" key="project-file-info">
                 <div className="grid-box">
-                    <Upload {...this.getUploadConfig()}>
+                    <Upload {...this.getUploadConfig('PROJECT')}>
                         <Button icon="cloud-upload">上传文件</Button>   
                     </Upload>
-                    <Table style={{marginTop:"10px"}} locale={locale} footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
+                    <Table style={{marginTop:"10px"}} locale={locale} footer={this.getTableFooter.bind(this,"project-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageProjectInfo} onChange={this.handleProjectChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.projectFileSource} bordered />
                 </div>
                 </TabPane>;
-            }
-            
+            TabPaneCheckFile = <TabPane tab="验收资料" key="check-file-info">
+                <div className="grid-box">
+                    <Upload {...this.getUploadConfig('CHECK')}>
+                        <Button icon="cloud-upload">上传文件</Button>   
+                    </Upload>
+                    <Table style={{marginTop:"10px"}} locale={locale} footer={this.getTableFooter.bind(this,"check-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageCheckInfo} onChange={this.handleCheckChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.checkFileSource} bordered />
+                </div>
+                </TabPane>;
             /**
              * 订单事件处理
              */
@@ -1027,7 +1132,7 @@ class EditOrderForm extends BasePage {
 
             editContent = (<div className="grid-form">            
             <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>
-                <Tabs tabBarExtraContent={extOperations} type="card">
+                <Tabs tabBarExtraContent={extOperations} onChange={this.onTabChangeHandler.bind(this)} type="card">
                     <TabPane tab="基本信息" key="basic-info">                                                
                         <Row>
                             <Col span={12}>                               
@@ -1193,7 +1298,8 @@ class EditOrderForm extends BasePage {
                     {TabPaneMore}
                     {TabPanePayment}
                     {TabPaneEvent}
-                    {TabPaneFile}
+                    {TabPaneProjectFile}
+                    {TabPaneCheckFile}
                 </Tabs>                
             </Form>
             </div>);

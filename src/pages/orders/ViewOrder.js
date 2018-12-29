@@ -24,22 +24,30 @@ class ViewOrder extends BasePage {
             isEdit:false,
             isAdmin:false,
             orderInfo:{},
-            pageInfo:{
+            pageProjectInfo:{
                 pageSize:20,
                 current:1,
                 total:0,
                 sortField:"create_date",
                 sortDirection:"desc",                
-            },       
-            dataSource:[],
+            }, 
+            pageCheckInfo:{
+                pageSize:20,
+                current:1,
+                total:0,
+                sortField:"create_date",
+                sortDirection:"desc",                
+            },        
+            projectFileSource:[],
+            checkFileSource:[],
         }
     }
     componentWillMount = () =>{
-        // 文件表格列头
+        // 资料表格列头
         this.dataColumns = [
             {title:'文件名',sorter: true,dataIndex:'name',render:(text,render)=>(this.getFileNameCell(text,render))},
             {title:'文件路径',sorter: true,dataIndex:'path'},
-            {title:'文件类型',sorter: true,dataIndex:'fileType'},
+            {title:'扩展名',sorter: true,dataIndex:'fileSuffix'},
             {title:'关联订单', width:200,sorter: true,dataIndex:'orderSn'},
             {title:'上传用户',sorter: true,dataIndex:'uid'},
             {title:'下载次数', width:100,sorter: true,dataIndex:'uploadCount'},
@@ -85,8 +93,7 @@ class ViewOrder extends BasePage {
                     loading:false,
                     isEdit:isOrderEdit,
                     isAdmin:isAdmin         
-                });
-                base.searchFile(base.state.pageInfo);
+                });                
             }else{
                 base.setState({
                     loading:false
@@ -110,28 +117,50 @@ class ViewOrder extends BasePage {
     /**
      * 查询订单项目文件
      */
-    searchFile=(params={})=>{
+    searchProjectFile=(params={})=>{
         const base = this;
         params.orderId = this.state.orderInfo.id;
+        params.fileType = "PROJECT";
         HttpUtils.get("/api/order/file/list",{params:params}).then(function(response){
             if(response){
                 var pageInfo = response.pageInfo;
-                var pagination = {...base.state.pageInfo};
+                var pagination = {...base.state.pageProjectInfo};
                 pagination.total = pageInfo.total;
                 pagination.current = pageInfo.pageNumber;                
                 base.setState({
-                    dataSource:response.list,
-                    pageInfo:pagination,
+                    projectFileSource:response.list,
+                    pageProjectInfo:pagination,
                 })
             }
         });
     }
 
     /**
-     * 切换页码
+     * 查询订单验收文件
      */
-    handleTableChange=(pagination,filters,sorter) => {        
-        var pager = {...this.state.pageInfo};
+    searchCheckFile=(params={})=>{
+        const base = this;
+        params.orderId = this.state.orderInfo.id;
+        params.fileType="CHECK";
+        HttpUtils.get("/api/order/file/list",{params:params}).then(function(response){
+            if(response){
+                var pageInfo = response.pageInfo;
+                var pagination = {...base.state.pageCheckInfo};
+                pagination.total = pageInfo.total;
+                pagination.current = pageInfo.pageNumber;                
+                base.setState({
+                    checkFileSource:response.list,
+                    pageCheckInfo:pagination,
+                })
+            }
+        });
+    }
+
+    /**
+     * 项目文件切换页码
+     */
+    handleProjectChange=(pagination,filters,sorter) => {        
+        var pager = {...this.state.pageProjectInfo};
         pager.current = pagination.current;
         pager.pageNumber = pagination.current;
         if(sorter.field){
@@ -143,9 +172,32 @@ class ViewOrder extends BasePage {
         }
         
         this.setState({
-            pageInfo:pager,            
+            pageProjectInfo:pager,            
         })
-        this.searchFile(pager);
+        this.searchProjectFile(pager);
+    }
+    /**
+     * 难收文件切换页码
+     */
+    /**
+     * 切换页码
+     */
+    handleCheckChange=(pagination,filters,sorter) => {        
+        var pager = {...this.state.pageCheckInfo};
+        pager.current = pagination.current;
+        pager.pageNumber = pagination.current;
+        if(sorter.field){
+            pager.sortDirection = sorter.order.replace("end","");
+            pager.sortField = WebUtils.getHumpString(sorter.field);
+        }else{
+            pager.sortDirection = "desc";
+            pager.sortField = "create_date"
+        }
+        
+        this.setState({
+            pageCheckInfo:pager,            
+        })
+        this.searchCheckFile(pager);
     }
 
     /**
@@ -165,9 +217,25 @@ class ViewOrder extends BasePage {
     /**
      * 文件列表Table脚注
      */
-    getTableFooter=()=>{
+    getTableFooter=(key)=>{
+        if(key==='project-file-info'){
+            return (<label>共找到<span style={{color:"#1890ff"}}> {this.state.pageProjectInfo.total} </span>条项目文件信息</label>);
+        }else if(key==='check-file-info'){
+            return (<label>共找到<span style={{color:"#1890ff"}}> {this.state.pageCheckInfo.total} </span>条验收文件信息</label>);
+        }        
+    }
+
+    /**
+     * Tab切换事件
+     */
+    onTabChangeHandler=(key)=>{
         const base = this;
-        return (<label>共找到<span style={{color:"#1890ff"}}> {base.state.pageInfo.total} </span>条文件信息</label>);
+        if(key==='project-file-info'){
+            base.searchProjectFile(base.state.pageInfo);
+        }else if(key==='check-file-info'){
+            base.searchCheckFile(base.state.pageInfo);
+        }
+        console.log(key);
     }
 
     render=()=>{
@@ -203,7 +271,9 @@ class ViewOrder extends BasePage {
             // 订单实时状态
             let TabPaneEvent = undefined;
             // 订单项目文件
-            let TabPaneFile = undefined;
+            let TabPaneProjectFile = undefined;
+            // 验收文件
+            let TabPaneCheckFile = undefined;
             if(this.state.isAdmin){
                 TabPaneMore = <TabPane tab="详细信息" key="more-info">
                     <div className="view-box">
@@ -317,11 +387,19 @@ class ViewOrder extends BasePage {
                     </div>
                 </TabPane>;
 
-                TabPaneFile = <TabPane tab="项目文件" key="file-info">
+                TabPaneProjectFile = <TabPane tab="项目资料" key="project-file-info">
                     <div className="grid-box">
-                        <Table locale={locale} footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
+                        <Table locale={locale} footer={this.getTableFooter.bind(this,"project-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageProjectInfo} onChange={this.handleProjectChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.projectFileSource} bordered />
                     </div>
                 </TabPane>;
+
+                TabPaneCheckFile = <TabPane tab="验收资料" key="check-file-info">
+                <div className="grid-box">
+                    <Table locale={locale} footer={this.getTableFooter.bind(this,"check-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageCheckInfo} onChange={this.handleCheckChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.checkFileSource} bordered />
+                </div>
+                </TabPane>;
+
+                
             }
 
             let OrderEvents = [];
@@ -362,7 +440,7 @@ class ViewOrder extends BasePage {
                 </div>
             </TabPane>
 
-            viewContent = <div className="grid-form" style={{padding:"10px 0px"}}><Tabs tabBarExtraContent={extOperations} type="card">
+            viewContent = <div className="grid-form" style={{padding:"10px 0px"}}><Tabs onChange={this.onTabChangeHandler.bind(this)} tabBarExtraContent={extOperations} type="card">
                 <TabPane tab="订单信息" key="basic-info">
                     <div className="view-box">
                         <table className="view-table">
@@ -432,7 +510,8 @@ class ViewOrder extends BasePage {
                 {TabPaneMore}
                 {TabPanePayment}
                 {TabPaneEvent}
-                {TabPaneFile}
+                {TabPaneProjectFile}
+                {TabPaneCheckFile}
             </Tabs></div>;
         }
         return(

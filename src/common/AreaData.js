@@ -8811,9 +8811,17 @@ const AreaData = [
                 "label": "东莞市", 
                 "children": [
                     {
-                        "value": "市辖区", 
-                        "label": "市辖区"
-                    }
+                        "value": "东城区", 
+                        "label": "东城区"
+                    },
+                    {
+                        "value": "南城区", 
+                        "label": "南城区"
+                    },
+                    {
+                        "value": "莞城区", 
+                        "label": "莞城区"
+                    },
                 ]
             }, 
             {
@@ -8823,6 +8831,86 @@ const AreaData = [
                     {
                         "value": "市辖区", 
                         "label": "市辖区"
+                    },
+                    {
+                        "value": "火炬开发区", 
+                        "label": "火炬开发区"
+                    },
+                    {
+                        "value": "小榄镇", 
+                        "label": "小榄镇"
+                    },
+                    {
+                        "value": "古镇", 
+                        "label": "古镇"
+                    },
+                    {
+                        "value": "三乡镇", 
+                        "label": "三乡镇"
+                    },
+                    {
+                        "value": "民众镇", 
+                        "label": "民众镇"
+                    },
+                    {
+                        "value": "东凤镇", 
+                        "label": "东凤镇"
+                    },
+                    {
+                        "value": "板芙镇", 
+                        "label": "板芙镇"
+                    },
+                    {
+                        "value": "神湾镇", 
+                        "label": "神湾镇"
+                    },
+                    {
+                        "value": "横栏镇", 
+                        "label": "横栏镇"
+                    },
+                    {
+                        "value": "港口镇", 
+                        "label": "港口镇"
+                    },
+                    {
+                        "value": "三角镇", 
+                        "label": "三角镇"
+                    },
+                    {
+                        "value": "大涌镇", 
+                        "label": "大涌镇"
+                    },
+                    {
+                        "value": "南头镇", 
+                        "label": "南头镇"
+                    },
+                    {
+                        "value": "沙溪镇", 
+                        "label": "沙溪镇"
+                    },
+                    {
+                        "value": "坦洲镇", 
+                        "label": "坦洲镇"
+                    },
+                    {
+                        "value": "黄圃镇", 
+                        "label": "黄圃镇"
+                    },
+                    {
+                        "value": "五桂山镇", 
+                        "label": "五桂山镇"
+                    },
+                    {
+                        "value": "南朗镇", 
+                        "label": "南朗镇"
+                    },
+                    {
+                        "value": "沙朗镇", 
+                        "label": "沙朗镇"
+                    },
+                    {
+                        "value": "阜沙镇", 
+                        "label": "阜沙镇"
                     }
                 ]
             }, 
@@ -8849,9 +8937,13 @@ const AreaData = [
                 "label": "揭阳市", 
                 "children": [
                     {
+                        "value": "东山区", 
+                        "label": "东山区"
+                    },
+                    {
                         "value": "榕城区", 
                         "label": "榕城区"
-                    }, 
+                    },                     
                     {
                         "value": "揭东县", 
                         "label": "揭东县"

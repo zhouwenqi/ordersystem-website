@@ -235,9 +235,9 @@ class EditBranchForm extends React.Component{
                     <Breadcrumb.Item>修改网点信息</Breadcrumb.Item>
                 </Breadcrumb>
                 <div className="branch-form">
-                    <Tabs tabBarExtraContent={extOperations} type="card">
-                        <TabPane tab="网点信息" key="basic-info">
-                            <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}>                        
+                    <Form onSubmit={this.handleSubmit} size="small" style={{padding:'10px 0px'}}> 
+                        <Tabs tabBarExtraContent={extOperations} type="card">
+                            <TabPane tab="网点信息" key="basic-info">                                                   
                                 <Row>
                                     <Col span={12}>                                                     
                                         <Row>
@@ -310,15 +310,51 @@ class EditBranchForm extends React.Component{
                                             </Col>                                    
                                         </Row>
                                     </Col>
-                                </Row>
-                            </Form>
-                        </TabPane>
-                        <TabPane tab="网点成员" key="user-list">
-                            <div className="branch-box">
-                                <Table loading={this.state.loading} pagination={false} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.branchUserList} bordered />
-                            </div>
-                        </TabPane>
-                    </Tabs>
+                                </Row>                                
+                            </TabPane>
+                            <TabPane tab="收款帐户" key="payment-info">                                                    
+                                <Row>
+                                    <Col span={12}>                                                     
+                                        <Row>
+                                            <Col span={24}>
+                                                <FormItem {...formItemLayout}
+                                                    label="收款户名">
+                                                    {getFieldDecorator('bankAccountName',
+                                                    {rules:[{required:false}]
+                                                    })(<Input type="text" placeholder="请输入收款户名" />)} 
+                                                </FormItem>                    
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={24}>
+                                                <FormItem {...formItemLayout}
+                                                    label="收款银行帐号">
+                                                    {getFieldDecorator('bankAccountCode',
+                                                    {rules:[{required:false}]
+                                                    })(<Input type="text" placeholder="请输入收款银行帐号" />)} 
+                                                </FormItem>                    
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={24}>
+                                                <FormItem {...formItemLayout}
+                                                    label="收款支行名称">
+                                                    {getFieldDecorator('bankName',
+                                                    {rules:[{required:false}]
+                                                    })(<Input type="text" placeholder="请输入收款支行名称" />)} 
+                                                </FormItem>                    
+                                            </Col>
+                                        </Row>
+                                    </Col>
+                                </Row>                            
+                            </TabPane>
+                            <TabPane tab="网点成员" key="user-list">
+                                <div className="branch-box">
+                                    <Table loading={this.state.loading} pagination={false} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.branchUserList} bordered />
+                                </div>
+                            </TabPane>
+                        </Tabs>
+                    </Form>
                 </div>
             </Spin>
         )
