@@ -62,6 +62,23 @@ class OrderListForm extends BasePage {
         }
         return (<Row>{viewBtn}{editBtn}{deleteBtn}</Row>);
     }
+
+    /**
+     * 返回区域显示
+     */
+    getTableAddress = (text,record)=>{
+        let areas = "-";
+        if(record.province){
+            areas = record.province;
+        }
+        if(record.city){
+            areas += '-'+record.city;
+        }
+        if(record.area){
+            areas += '-'+record.area;
+        }
+        return <label>{areas}</label>;
+    }
     
     componentWillMount = () =>{
         // 表格列头
@@ -72,7 +89,7 @@ class OrderListForm extends BasePage {
             {title:'客户名称',sorter: true,dataIndex:'consumerName'},
             {title:'客户联系人',sorter: true,dataIndex:'consumerContact'},
             {title:'联系电话',sorter: true,dataIndex:'consumerPhone'},           
-            {title:'地区',sorter: true,dataIndex:'area'},
+            {title:'地区',sorter: true,dataIndex:'area',render:(text,record)=>(this.getTableAddress(text,record))},
             {title:'派单时间',sorter: true,dataIndex:'assignDate',render:(text)=>(moment(text).format("YYYY-MM-DD"))},
             {title:'创建时间',sorter: true,dataIndex:'createDate',defaultSortOrder: 'descend'},
             {title:'状态',dataIndex:'orderStatus',render:(id,record)=>(this.getOrderStatusSetup(record))},

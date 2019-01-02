@@ -29,6 +29,9 @@ const formItemLayout = {
       xs: { span: 24 },
       sm: { span: 18 },
     },
+    style:{
+        marginBottom:"10px"
+    }
 };
 
 /**
@@ -60,7 +63,7 @@ class OrderSearchForm extends React.Component {
     }
     
     render=()=>{
-        const {visible,onCancel,onSearch,form} = this.props;
+        const {visible,onCancel,onSearch,form,isFollow} = this.props;
         const { getFieldDecorator } = form; 
         // 设置订单状态下拉框数据
         let orderStatus = [];
@@ -73,26 +76,32 @@ class OrderSearchForm extends React.Component {
             orderTypes.push(<Option key={index} value={item.index}>{item.label}</Option>);
         });
         // 设置项目跟进人下拉框数据
-        let trackDatas = [];
+        let trackDatas = [<Option key={-1} value="">所有人</Option>];
         this.state.trackData.map((item,index)=>{
             trackDatas.push(<Option key={index} value={item.id}>{item.uid}({item.realName})</Option>);
         });
+
+        let trackFormItem = undefined;
+        if(!isFollow){
+            trackFormItem = <Row>
+                <Col span={24}>
+                    <FormItem {...formItemLayout}
+                        label="项目跟进人">
+                        {getFieldDecorator('trackUserId',
+                        {rules:[{required:false,}]
+                        })(<Select placeholder="请选择项目跟进人">
+                            {trackDatas}
+                        </Select>)} 
+                    </FormItem>
+                </Col>
+            </Row> 
+        }
+
         return (
             <React.Fragment>                
                 <Modal onCancel={onCancel} onOk={onSearch} visible={visible} title="订单高级查询">                    
                     <Form size="small">
-                        <Row>
-                            <Col span={24}>
-                                <FormItem {...formItemLayout}
-                                    label="项目跟进人">
-                                    {getFieldDecorator('trackUserId',
-                                    {rules:[{required:false,}]
-                                    })(<Select placeholder="请选择项目跟进人">
-                                        {trackDatas}
-                                    </Select>)} 
-                                </FormItem>
-                            </Col>
-                        </Row> 
+                        {trackFormItem}
                         <Row>
                             <Col span={24}>
                                 <FormItem {...formItemLayout} label="订单状态">

@@ -213,7 +213,7 @@ class EditBranchForm extends React.Component{
     render=()=>{
         const {getFieldDecorator} = this.props.form;
         const branch = this.state.branchInfo;
-        let users = [];
+        let users = [<Option key={-1} value="">没有负责人</Option>];
         this.state.branchUserData.map((item,index)=>{
             users.push(<Option key={index} value={item.id}>{item.uid}({item.realName})</Option>);
         });

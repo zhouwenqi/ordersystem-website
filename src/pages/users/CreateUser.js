@@ -108,7 +108,7 @@ class CreateUserFrom extends React.Component {
 
     render=()=>{
         const {getFieldDecorator} = this.props.form;       
-        const branchs = []
+        let branchs = [<Option key={-1} value="">不属于任何网点</Option>]
         this.state.branchData.map((item,index)=>{
             branchs.push(<Option key={index} value={item.id}>{item.name}</Option>);
         });

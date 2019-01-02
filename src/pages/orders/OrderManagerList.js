@@ -34,6 +34,7 @@ class OrderListForm extends BasePage {
             excelUrl:undefined,
             loading:false,
             isSearchShow:false,
+            isFollow:false,
         };
     }   
 
@@ -53,8 +54,27 @@ class OrderListForm extends BasePage {
         var editBtn,deleteBtn;       
         editBtn = <Link to={'/dash/order/edit/'+record.id} className="item-a" title="修改"><Icon type="edit" theme="outlined" /></Link>;
         deleteBtn = <a className="item-a delete" onClick={this.deleteOrder.bind(this,record,record.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>
-        
+        if(this.state.isFollow){
+            deleteBtn = undefined;
+        }
         return (<Row>{viewBtn}{editBtn}{deleteBtn}</Row>);
+    }
+
+    /**
+     * 返回区域显示
+     */
+    getTableAddress = (text,record)=>{
+        let areas = "-";
+        if(record.province){
+            areas = record.province;
+        }
+        if(record.city){
+            areas += '-'+record.city;
+        }
+        if(record.area){
+            areas += '-'+record.area;
+        }
+        return <label>{areas}</label>;
     }
     
     componentWillMount = () =>{
@@ -62,11 +82,11 @@ class OrderListForm extends BasePage {
         this.dataColumns = [
             {title:'晨颢工单',sorter: true,dataIndex:'sn',render:(id,record)=>(<Link to={'/dash/order/view/'+record.id}>{record.sn}</Link>)},
             {title:'订单类型',sorter: true,dataIndex:'orderType',render:(id,record)=>(this.getOrderType(record))},
-            {title:'订单工期',sorter: true,dataIndex:'orderTime'},
+            {title:'订单工期',sorter: true,dataIndex:'orderTime',render:(text)=>(moment(text).format("YYYY-MM-DD"))},
             {title:'客户名称',sorter: true,dataIndex:'consumerName'},
             {title:'客户联系人',sorter: true,dataIndex:'consumerContact'},
             {title:'联系电话',sorter: true,dataIndex:'consumerPhone'},           
-            {title:'地区',sorter: true,dataIndex:'area'},
+            {title:'地区',sorter: true,dataIndex:'area',render:(text,record)=>(this.getTableAddress(text,record))},
             {title:'派单时间',sorter: true,dataIndex:'assignDate',render:(text)=>(moment(text).format("YYYY-MM-DD"))},
             {title:'创建时间',sorter: true,dataIndex:'createDate',defaultSortOrder: 'descend'},
             {title:'状态',dataIndex:'orderStatus',render:(id,record)=>(<OrderStatusDropDown orderInfo={record} />)},
@@ -74,7 +94,13 @@ class OrderListForm extends BasePage {
         ];
     }
     componentDidMount = ()=>{
-        this.searchOrder(this.state.pageInfo);
+        const user = window.config.user;
+        if(user.role==='follow'){
+            this.setState({
+                isFollow:true,
+            })
+        }
+        this.searchOrder(this.state.pageInfo);        
     }
     /**
      * 删除订单
@@ -208,17 +234,18 @@ class OrderListForm extends BasePage {
                 console.log(err);
                 return;
             }
+            console.log("searchParams:",values);
             
             if(values.createDate){
-                const createDateBegin = values.createDate[0].format("YYYY-MM-DD") + "00:00:00";
-                const createDateEnd = values.createDate[1].format("YYYY-MM-DD") + "59:59:59";
+                const createDateBegin = values.createDate[0].format("YYYY-MM-DD") + " 00:00:00";
+                const createDateEnd = values.createDate[1].format("YYYY-MM-DD") + " 59:59:59";
                 values.createDateBegin = createDateBegin;
                 values.createDateEnd = createDateEnd;
                 values.createDate = undefined;
             }
             if(values.orderTime){
-                const orderTimeBegin = values.orderTime[0].format("YYYY-MM-DD") + "00:00:00";
-                const orderTimeEnd = values.orderTime[1].format("YYYY-MM-DD") + "59:59:59";
+                const orderTimeBegin = values.orderTime[0].format("YYYY-MM-DD") + " 00:00:00";
+                const orderTimeEnd = values.orderTime[1].format("YYYY-MM-DD") + " 59:59:59";
                 values.orderTimeBegin = orderTimeBegin;
                 values.orderTimeEnd = orderTimeEnd;
                 values.orderTime = undefined;
@@ -231,8 +258,14 @@ class OrderListForm extends BasePage {
                     values.city= values.areas[1];
                 }
                 values.province = values.areas[0];
-                values.areas = undefined;
+                values.areas = undefined;                
             }
+            if(values.orderTypes){
+                values.orderTypes = values.orderTypes + '';
+            }
+            if(values.orderStatuss){
+                values.orderStatuss = values.orderStatuss + '';
+            }            
             resultData = values;
         });
         return resultData;
@@ -315,7 +348,7 @@ class OrderListForm extends BasePage {
                         </Col>
                     </Row>
                 </Form>
-                <OrderSearchFrame wrappedComponentRef={this.getOrderSearchForm.bind(this)} onCancel={this.onHiddenSuperSearch.bind(this)} onSearch={this.onStartSuperSearch.bind(this)} visible={this.state.isSearchShow} />
+                <OrderSearchFrame wrappedComponentRef={this.getOrderSearchForm.bind(this)} onCancel={this.onHiddenSuperSearch.bind(this)} onSearch={this.onStartSuperSearch.bind(this)} visible={this.state.isSearchShow} isFollow={this.state.isFollow} />
                 <Table locale={locale} footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} onRow={this.onRowClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
             </div>);
     }
