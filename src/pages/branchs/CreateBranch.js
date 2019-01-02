@@ -231,7 +231,14 @@ class CreateBranchForm extends React.Component{
                                                 </FormItem>                    
                                             </Col>
                                         </Row>
-                                    </Col>
+                                        <Row>                                        
+                                            <Col span={24}>
+                                                <FormItem {...btnItemLayout}>
+                                                    <Button loading={this.state.loading} type="primary" htmlType="submit">提交</Button>
+                                                </FormItem>
+                                            </Col>                                    
+                                        </Row>
+                                    </Col>                                    
                                 </Row>
                             </TabPane>
                         </Tabs>

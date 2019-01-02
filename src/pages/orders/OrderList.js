@@ -211,7 +211,6 @@ class OrderListForm extends BasePage {
         const beforeSearchKeys = getFieldDecorator("searchProperty",{initialValue:"sn"})(
          <Select>
             <Option value="sn">订单号</Option>
-            <Option value="consumer_name">客户名称</Option>
             <Option value="consumer_contact">客户联系人</Option>
             <Option value="consumer_phone">联系电话</Option>
         </Select>);

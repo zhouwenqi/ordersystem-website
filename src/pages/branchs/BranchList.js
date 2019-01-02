@@ -2,13 +2,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
     Form,Icon, Row, Table,Modal,
+    Input,Select,Col,
 } from 'antd';
 import HttpUtils from '../../utils/HttpUtils';
-import ChSearch from '../../components/ChSearch';
+import WebUtils from '../../utils/WebUtils';
 
 import './branch.css';
 
 const Confirm = Modal.confirm;
+const Search = Input.Search;
+const InputGroup = Input.Group;
+const Option = Select.Option;
 
 /**
  * 网点列表
@@ -19,6 +23,13 @@ class BranchListForm extends React.Component{
         this.state={
             user:null,
             loading:false,
+            pageInfo:{
+                pageSize:20,
+                current:1,
+                total:0,
+                sortField:"create_date",
+                sortDirection:"desc"
+            },       
             dataSource:[]
         };
     } 
@@ -37,7 +48,7 @@ class BranchListForm extends React.Component{
         ];
     }
     componentDidMount = ()=>{
-        this.getBranchData();
+        this.searchBranch();
     }
     /**
      * 删除网点信息
@@ -81,24 +92,100 @@ class BranchListForm extends React.Component{
         let deleteBtn = <a className="item-a delete" onClick={this.onDeleteBranch.bind(this,record)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>        
         return (<Row>{editBtn}{deleteBtn}</Row>);
     }
+
     /**
-     * 获取网点数据
+     * 查询网点
      */
-    getBranchData=()=>{
-        const base = this;
+    searchBranch=(params={})=>{
+        const base = this;       
         base.setState({
             loading:true,
         });
-        ChSearch.branchList(function(list){
-            base.setState({
-                dataSource:list,
-                loading:false
-            });
+
+        HttpUtils.get("/api/branch/search",{params:params}).then(function(response){
+            if(response){
+                var pageInfo = response.pageInfo;
+                var pagination = {...base.state.pageInfo};
+                pagination.total = pageInfo.total;
+                pagination.current = pageInfo.pageNumber;                
+                base.setState({
+                    dataSource:response.list,
+                    loading:false,
+                    pageInfo:pagination,
+                })
+            }
         });
     }
+    /**
+     * 切换页码
+     */
+    handleTableChange=(pagination,filters,sorter) => {        
+        var pager = {...this.state.pageInfo};
+        pager.current = pagination.current;
+        pager.pageNumber = pagination.current;
+        if(sorter.field){
+            pager.sortDirection = sorter.order.replace("end","");
+            pager.sortField = WebUtils.getHumpString(sorter.field);
+        }else{
+            pager.sortDirection = "desc";
+            pager.sortField = "create_date"
+        }
+        
+        this.setState({
+            pageInfo:pager,            
+        })
+        this.searchBranch(pager);
+
+    }
+    /**
+     * 提交查询条件
+     */
+    handleSubmit=(e,event)=>{
+        event.preventDefault();
+        const base = this;
+        this.props.form.validateFields((err, values) => {
+            if (!err) {
+                var pagination = {...base.state.pageInfo};
+                pagination.searchProperty = values.searchProperty;
+                pagination.searchValue = values.searchValue;
+                pagination.pageNumber = 1;
+                base.setState({
+                    pageInfo:pagination
+                });
+                base.searchBranch(pagination);
+            }
+        });
+
+    }
     render=()=>{
+        const {getFieldDecorator} = this.props.form; 
+        const beforeSearchKeys = getFieldDecorator("searchProperty",{initialValue:"name"})(
+            <Select style={{minWidth:"120px"}}>
+               <Option value="name">网点名称</Option>
+               <Option value="company">公司名称</Option>
+               <Option value="phone">联系电话</Option>
+           </Select>);
+        const locale = {
+            filterTitle: '筛选',
+            filterConfirm: '确定',
+            filterReset: '重置',
+            emptyText: '没有找到相关网点信息',
+        }
         return (<div className="branch-box">
-            <Table loading={this.state.loading} pagination={false} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
+            <Form onSubmit={this.handleSubmit}>
+                <Row style={{margin:"0px 0px 10px 0px"}}>                  
+                    <Col span={8}>                  
+                        <InputGroup>         
+                        {getFieldDecorator('searchValue',
+                            {rules:[{required:false}]
+                            })(                         
+                                <Search onSearch={this.handleSubmit} addonBefore={beforeSearchKeys} enterButton placeholder="请输入查询关键词" />
+                            )}                                                
+                        </InputGroup>
+                    </Col>                    
+                </Row>                
+            </Form>
+            <Table locale={locale} loading={this.state.loading} pagination={false} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
         </div>)
     }
 }

@@ -320,7 +320,7 @@ class EditBranchForm extends React.Component{
                                                 <FormItem {...formItemLayout}
                                                     label="收款户名">
                                                     {getFieldDecorator('bankAccountName',
-                                                    {rules:[{required:false}]
+                                                    {rules:[{required:false}],initialValue:branch.bankAccountName
                                                     })(<Input type="text" placeholder="请输入收款户名" />)} 
                                                 </FormItem>                    
                                             </Col>
@@ -330,7 +330,7 @@ class EditBranchForm extends React.Component{
                                                 <FormItem {...formItemLayout}
                                                     label="收款银行帐号">
                                                     {getFieldDecorator('bankAccountCode',
-                                                    {rules:[{required:false}]
+                                                    {rules:[{required:false}],initialValue:branch.bankAccountCode
                                                     })(<Input type="text" placeholder="请输入收款银行帐号" />)} 
                                                 </FormItem>                    
                                             </Col>
@@ -340,10 +340,17 @@ class EditBranchForm extends React.Component{
                                                 <FormItem {...formItemLayout}
                                                     label="收款支行名称">
                                                     {getFieldDecorator('bankName',
-                                                    {rules:[{required:false}]
+                                                    {rules:[{required:false}],initialValue:branch.bankName
                                                     })(<Input type="text" placeholder="请输入收款支行名称" />)} 
                                                 </FormItem>                    
                                             </Col>
+                                        </Row>
+                                        <Row>                                        
+                                            <Col span={24}>
+                                                <FormItem {...btnItemLayout}>
+                                                    <Button loading={this.state.loading} type="primary" htmlType="submit">保存</Button>
+                                                </FormItem>
+                                            </Col>                                    
                                         </Row>
                                     </Col>
                                 </Row>                            

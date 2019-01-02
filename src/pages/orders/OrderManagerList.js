@@ -7,6 +7,7 @@ import moment from 'moment';
 import BasePage from '../BasePage';
 import OrderType from '../../common/OrderType';
 import OrderStatusDropDown from '../../components/OrderStatusDropDown';
+import OrderSearchFrame from '../../components/OrderSearchForm';
 
 import './order.css';
 
@@ -28,10 +29,11 @@ class OrderListForm extends BasePage {
                 total:0,
                 sortField:"create_date",
                 sortDirection:"desc"
-            },       
+            },
             dataSource:[],
             excelUrl:undefined,
-            loading:false
+            loading:false,
+            isSearchShow:false,
         };
     }   
 
@@ -110,8 +112,9 @@ class OrderListForm extends BasePage {
         base.setState({
             loading:true,
         });
-
-        HttpUtils.get("/api/order/search",{params:params}).then(function(response){
+        const superSerachData = base.getSuperSerachData();
+        const searchData = {...params,...superSerachData}
+        HttpUtils.get("/api/order/search",{params:searchData}).then(function(response){
             if(response){
                 var pageInfo = response.pageInfo;
                 var pagination = {...base.state.pageInfo};
@@ -124,7 +127,7 @@ class OrderListForm extends BasePage {
                 })
             }
         });
-    }    
+    } 
 
     /**
      * 导出excel
@@ -133,9 +136,10 @@ class OrderListForm extends BasePage {
         var pagination = {...this.state.pageInfo};
         pagination.pageNumber = 1;
         pagination.pageSize = null;
-        let url = window.config.apiUrl+"/api/order/export?rand="+Math.random()*0.01+"&"+WebUtils.getUrlArgs(pagination);        
+        const superSerachData = this.getSuperSerachData();
+        const serachData = {...pagination,...superSerachData}
+        let url = window.config.apiUrl+"/api/order/export?rand="+Math.random()*0.01+"&"+WebUtils.getUrlArgs(serachData);        
         url+="&ch-token="+window.config.token;
-        console.log("url",url);
         this.setState({
             excelUrl:url
         })
@@ -170,7 +174,7 @@ class OrderListForm extends BasePage {
         event.preventDefault();
         const base = this;
         this.props.form.validateFields((err, values) => {
-            if (!err) {
+            if (!err) {                
                 var pagination = {...base.state.pageInfo};
                 pagination.searchProperty = values.searchProperty;
                 pagination.searchValue = values.searchValue;
@@ -182,6 +186,78 @@ class OrderListForm extends BasePage {
             }
         });
 
+    }
+    /**
+     * 启动高级查询
+     */
+    onStartSuperSearch=()=>{
+        this.setState({
+            isSearchShow:false,
+        });
+        var pager = {...this.state.pageInfo};
+        this.searchOrder(pager);
+    }
+    /**
+     * 获取高级查询参数
+     */
+    getSuperSerachData=()=>{
+        const searchForm = this.searchForm.props.form; 
+        let resultData = undefined;       
+        searchForm.validateFields((err, values) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            
+            if(values.createDate){
+                const createDateBegin = values.createDate[0].format("YYYY-MM-DD") + "00:00:00";
+                const createDateEnd = values.createDate[1].format("YYYY-MM-DD") + "59:59:59";
+                values.createDateBegin = createDateBegin;
+                values.createDateEnd = createDateEnd;
+                values.createDate = undefined;
+            }
+            if(values.orderTime){
+                const orderTimeBegin = values.orderTime[0].format("YYYY-MM-DD") + "00:00:00";
+                const orderTimeEnd = values.orderTime[1].format("YYYY-MM-DD") + "59:59:59";
+                values.orderTimeBegin = orderTimeBegin;
+                values.orderTimeEnd = orderTimeEnd;
+                values.orderTime = undefined;
+            }
+            if(values.areas){
+                if(values.areas.length>2){
+                    values.area= values.areas[2];
+                }
+                if(values.areas.length>1){
+                    values.city= values.areas[1];
+                }
+                values.province = values.areas[0];
+                values.areas = undefined;
+            }
+            resultData = values;
+        });
+        return resultData;
+    }
+    /**
+     * 打开高级查询
+     */
+    onOpenSuperSearch=()=>{
+        this.setState({
+            isSearchShow:true,
+        })
+    }
+    /**
+     * 隐藏高级查询
+     */
+    onHiddenSuperSearch=()=>{
+        this.setState({
+            isSearchShow:false,
+        })
+    }
+    /**
+     * 获取高级查询表单
+     */
+    getOrderSearchForm=(searchForm)=>{
+        this.searchForm = searchForm;
     }
 
     /**
@@ -224,20 +300,22 @@ class OrderListForm extends BasePage {
                 <iframe src={this.state.excelUrl} />  
                 <Form onSubmit={this.handleSubmit}>
                     <Row style={{margin:"0px 0px 10px 0px"}}>                  
-                        <Col span={8}>                                                           
-                            <InputGroup>
+                        <Col span={12}>
+                            <InputGroup style={{width:"auto"}}>
                             {getFieldDecorator('searchValue',
                                 {rules:[{required:false}]
                                 })(                          
-                                    <Search onSearch={this.handleSubmit} addonBefore={beforeSearchKeys} enterButton placeholder="请输入查询关键词" />
+                                    <Search onSearch={this.handleSubmit} addonBefore={beforeSearchKeys} enterButton placeholder="请输入查询关键词" />                                   
                                 )}
-                            </InputGroup>                            
+                            </InputGroup>  
+                            <Button onClick={this.onOpenSuperSearch.bind(this)} style={{marginLeft:"10px"}}>高级查询</Button>                           
                         </Col>
-                        <Col style={{textAlign:"right"}} offset={10} span={6}>                        
+                        <Col style={{textAlign:"right"}} offset={6} span={6}>                                          
                             <Button onClick={this.onExportExcel} icon="file-excel">导出Excel</Button>
                         </Col>
-                    </Row>                
+                    </Row>
                 </Form>
+                <OrderSearchFrame wrappedComponentRef={this.getOrderSearchForm.bind(this)} onCancel={this.onHiddenSuperSearch.bind(this)} onSearch={this.onStartSuperSearch.bind(this)} visible={this.state.isSearchShow} />
                 <Table locale={locale} footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} onRow={this.onRowClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
             </div>);
     }
