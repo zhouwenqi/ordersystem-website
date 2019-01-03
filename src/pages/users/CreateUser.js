@@ -91,19 +91,24 @@ class CreateUserFrom extends React.Component {
     }
 
     componentDidMount = ()=>{
-        this.getBranchsData();
+        this.getBranchsData({});
     }
 
     /**
      * 获取网点列表
      */
-    getBranchsData=()=>{
+    getBranchsData=(keywords)=>{
         const base = this;
-        ChSearch.branchList(function(list){
+        const params={keywords:keywords};
+        ChSearch.branchList(params,function(list){
             base.setState({
                 branchData:list,
             })
         });
+    }
+
+    onSearchBranch=(keywords)=>{
+        this.getBranchsData(keywords);
     }
 
     render=()=>{
@@ -207,7 +212,7 @@ class CreateUserFrom extends React.Component {
                                                     label="所属网点">
                                                     {getFieldDecorator('branchId',
                                                     {rules:[{required:false}]
-                                                    })(<Select>
+                                                    })(<Select  showArrow={false} filterOption={false} onSearch={this.onSearchBranch.bind(this)} showSearch>
                                                         {branchs}
                                                     </Select>)} 
                                                 </FormItem>                    

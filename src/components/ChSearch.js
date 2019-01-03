@@ -66,13 +66,15 @@ class ChSearch {
     /**
      * 获取网点列表
      */
-    branchList = (func) => {
+    branchList = (pardata,func) => {
         if(timeout){
             clearTimeout(timeout);
             timeout = null;
         }
+        currentKeywords = pardata.keywords;
         function getBranchData(){
-            HttpUtil.get("/api/branch/list").then(function(response){
+            let params={role:"customer",pageSize:20,pageNumber:1,sortField:'create_date',sortDirection:'desc',...pardata};
+            HttpUtil.get("/api/branch/search",{params:params}).then(function(response){
                 if(response){
                     func(response.list);
                 }

@@ -4,6 +4,7 @@ import {
 } from 'antd';
 import { Chart, Tooltip, Axis, Legend, Bar } from 'viser-react';
 import HttpUtils from '../../utils/HttpUtils';
+import WebUtils from '../../utils/WebUtils';
 import './charts.css';
 import ChSearch from '../../components/ChSearch';
 
@@ -28,6 +29,8 @@ class AmountChartsForm extends React.Component{
                 routeQuantity:0
             },
             branchData:[],
+            serarchType:'create_date',
+            customerData:[]
         };
     } 
     /**
@@ -45,13 +48,13 @@ class AmountChartsForm extends React.Component{
         
     }
     componentDidMount = ()=>{
-        this.getBranchData();
+        this.getAmountChartsData();
     }
     /**
      * 获取帐务统计数据
      */
     getAmountChartsData(params={}){
-        if(params.dates && params.dates.length==2){
+        if(params.dates && params.dates.length===2){
             let beginDate = params.dates[0].format("YYYY-MM-DD");
             let endDate = params.dates[1].format("YYYY-MM-DD");
             params.beginDate = beginDate;
@@ -65,23 +68,47 @@ class AmountChartsForm extends React.Component{
         });
     }
     // 获取网点信息
-    getBranchData=()=>{
+    getBranchsData=(keywords)=>{
         const base = this;
-        ChSearch.branchList(function(list){
+        const params={keywords:keywords};
+        ChSearch.branchList(params,function(list){
             base.setState({
                 branchData:list,
             });
-            base.getAmountChartsData();
+        });
+    }
+    onSearchBranch=(keywords)=>{
+        this.getBranchsData(keywords);
+    }
+    onChangeType=(e)=>{
+        this.setState({
+            serarchType:e
         })
+    }
+    /**
+     * 查询客户列表
+     */
+    handlerSearchCustomer = (keywords)=>{
+        let base = this;        
+        ChSearch.customerList(keywords,function(data){
+            console.log("data:",data);
+            base.setState({customerData:data})
+        });
     }
     render = () => {
         const {getFieldDecorator} = this.props.form;
+        let customerData = [];
+        this.state.customerData.map((item,index)=>{            
+            let customerName = WebUtils.getSelectCustomerName(item);
+            customerData.push(<Option key={index} value={item.id}>{customerName}</Option>);
+        });
 
         // 设置日期类型选择
         let dateTypes = [];        
         dateTypes.push(<Option key="create_date" value="create_date">下单时间</Option>);
         dateTypes.push(<Option key="payment_time" value="payment_time">付款时间</Option>);
         dateTypes.push(<Option key="refunds_date" value="refunds_date">回款时间</Option>);
+        dateTypes.push(<Option key="user_id" value="user_id">订单来源</Option>);
 
         const data = [
             {"label":"总价格","合计":this.state.data.totalPrice},
@@ -96,6 +123,19 @@ class AmountChartsForm extends React.Component{
             branchDatas.push(<Option key={index} value={item.id}>{item.name}</Option>);
         })
 
+        let searchFormItem = getFieldDecorator('dates',
+        {rules:[{required:false}]
+        })(<RangePicker style={{marginRight:"10px"}} />);
+
+        if(this.state.serarchType==='user_id'){
+            searchFormItem = getFieldDecorator('orderUserId',
+            {rules:[{required:false}]
+            })(<Select showSearch showArrow={false} filterOption={false} placeholder="请选择订单来源" onSearch={this.handlerSearchCustomer} style={{marginRight:"10px",width:"300px"}}>
+            {customerData}
+        </Select>);
+        }
+
+
         return (
             <div>
                 <Form onSubmit={this.handleSubmit} size="small" style={{marginBottom:"10px"}}>
@@ -103,15 +143,13 @@ class AmountChartsForm extends React.Component{
                         <Col span={18}>
                             {getFieldDecorator('dateType',
                                 {rules:[{required:false}],initialValue:'create_date'
-                                })(<Select style={{width:"120px",marginRight:"10px"}}>
+                                })(<Select onChange={this.onChangeType.bind(this)} style={{width:"120px",marginRight:"10px"}}>
                                 {dateTypes}
                                 </Select>)} 
-                            {getFieldDecorator('dates',
-                                {rules:[{required:false}]
-                                })(<RangePicker style={{marginRight:"10px"}} />)}   
+                            {searchFormItem}   
                             {getFieldDecorator('branchId',
                                 {rules:[{required:false}],
-                                })(<Select placeholder="选择网点" style={{width:"120px",marginRight:"10px"}}>
+                                })(<Select showArrow={false} filterOption={false} placeholder="查询网点" onSearch={this.onSearchBranch.bind(this)} style={{width:"120px",marginRight:"10px"}} showSearch>
                                 {branchDatas}
                                 </Select>)}                             
                             <Button loading={this.state.loading} type="primary" htmlType="submit">统计</Button>            

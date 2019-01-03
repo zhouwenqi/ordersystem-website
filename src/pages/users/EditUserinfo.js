@@ -144,13 +144,18 @@ class EditUserFrom extends React.Component {
     /**
      * 获取网点列表
      */
-    getBranchsData=()=>{
+    getBranchsData=(keywords)=>{
         const base = this;
-        ChSearch.branchList(function(list){
+        const params={keywords:keywords};
+        ChSearch.branchList(params,function(list){
             base.setState({
                 branchData:list,
             })
         });
+    }
+
+    onSearchBranch=(keywords)=>{
+        this.getBranchsData(keywords);
     }
 
     /**
@@ -203,7 +208,7 @@ class EditUserFrom extends React.Component {
                         label="所属网点">
                         {getFieldDecorator('branchId',
                         {rules:[{required:false}],initialValue:user.branchId
-                        })(<Select>
+                        })(<Select showArrow={false} filterOption={false} onSearch={this.onSearchBranch.bind(this)} showSearch>
                             {branchs}
                         </Select>)} 
                     </FormItem>                    

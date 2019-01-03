@@ -82,7 +82,7 @@ class OrderListForm extends BasePage {
         this.dataColumns = [
             {title:'晨颢工单',sorter: true,dataIndex:'sn',render:(id,record)=>(<Link to={'/dash/order/view/'+record.id}>{record.sn}</Link>)},
             {title:'订单类型',sorter: true,dataIndex:'orderType',render:(id,record)=>(this.getOrderType(record))},
-            {title:'订单工期',sorter: true,dataIndex:'orderTime',render:(text)=>(moment(text).format("YYYY-MM-DD"))},
+            {title:'订单工期',sorter: true,dataIndex:'orderTime',render:(text)=>(text ? moment(text).format("YYYY-MM-DD") : '')},
             {title:'客户名称',sorter: true,dataIndex:'consumerName'},
             {title:'客户联系人',sorter: true,dataIndex:'consumerContact'},
             {title:'联系电话',sorter: true,dataIndex:'consumerPhone'},           

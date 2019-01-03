@@ -128,7 +128,7 @@ class UserListForm extends React.Component{
      */
     getBranchList=()=>{
         const base = this;
-        ChSearch.branchList(function(list){
+        ChSearch.branchList({},function(list){
             base.setState({
                 branchData:list,
             });

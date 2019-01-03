@@ -197,7 +197,8 @@ class EditOrderForm extends BasePage {
                 
                 if(user.role==='manager' || user.role==='employee' || user.role==='follow'){                
                     // 获取网点数据
-                    let requests = [HttpUtils.get("/api/branch/list")];
+                    const branchParams = {province:orderInfo.province,city:orderInfo.city,area:orderInfo.area};
+                    let requests = [HttpUtils.get("/api/branch/search",{parans:branchParams})];
                     // 获取项目跟进人数据
                     const trackParams = {role:"follow"};               
                     requests.push(HttpUtils.get("/api/user/list",{params:trackParams}));
@@ -209,9 +210,10 @@ class EditOrderForm extends BasePage {
                         // 获取上门工程师数据
                         if(orderInfo.branchId){
                             base.getEnginnerList(orderInfo.branchId);
-                        }
-                        
-                    }));          
+                        }                        
+                    })); 
+                    
+                    
                 }
             }else{
                 base.setState({
@@ -219,6 +221,33 @@ class EditOrderForm extends BasePage {
                 });
             }
         });
+    }
+
+    /**
+     * 获取网点数据
+     */
+    onGetBranchList=(areas)=>{
+        const base = this;
+        const params={params:areas}
+        HttpUtils.get('/api/branch/search',params).then(function(response){
+            base.setState({
+                branchData:response.list
+            });
+        });
+    }
+
+    /**
+     * 选择地区
+     */
+    onAreaChange=(e)=>{
+        if(e.length>2) {
+            const areas={
+                province:e[0],
+                city:e[1],
+                area:e[2]
+            }
+            this.onGetBranchList(areas);
+        }
     }
 
     /**
@@ -438,10 +467,19 @@ class EditOrderForm extends BasePage {
             currentEnginner:{},
             enginnerData:[],
         });
-        this.state.branchData.map((item,index)=>{            
-            if(item.id===e){
-                this.setState({currentBranch:item});
+        console.log("e",e);
+        this.state.branchData.map((item,index)=>{   
+                     
+            if(item.id===e){                
                 this.getEnginnerList(e);
+                let orderInfo = {...this.state.orderInfo};
+                orderInfo.bankAccountName = item.bankAccountName;
+                orderInfo.bankAccountCode = item.bankAccountCode;
+                orderInfo.bankName = item.bankName;
+                this.setState({
+                    currentBranch:item,
+                    orderInfo:orderInfo
+                });             
             }
         });
     }
@@ -1163,7 +1201,7 @@ class EditOrderForm extends BasePage {
                                         <FormItem {...formItemLayout}
                                             label="订单工期">
                                             {getFieldDecorator('orderTime',
-                                            {rules:[{required:false}],initialValue:Moment(order.orderTime,"YYYY-MM-DD")
+                                            {rules:[{required:false}],initialValue:order.orderTime?Moment(order.orderTime,"YYYY-MM-DD"):undefined
                                             })(<DatePicker placeholder="选择订单工期" />)} 
                                         </FormItem>                    
                                     </Col>                            
@@ -1224,7 +1262,7 @@ class EditOrderForm extends BasePage {
                                             label="省/市/区">
                                             {getFieldDecorator('areas',
                                             {rules:[{required:true,message:'请选择地区'}],initialValue:[order.province,order.city,order.area]
-                                            })(<Cascader changeOnSelect={true} options={AreaData} placeholder="请选择" />)} 
+                                            })(<Cascader onChange={this.onAreaChange.bind(this)} changeOnSelect={true} options={AreaData} placeholder="请选择" />)} 
                                         </FormItem>                     
                                     </Col>
                                 </Row>

@@ -37,6 +37,7 @@ class CategoryChartsForm extends React.Component{
      * 验证表单
      */
     handleSubmit = (e) =>{
+        
         e.preventDefault();
         const base = this;
         this.props.form.validateFields((err,values) => {
@@ -86,24 +87,29 @@ class CategoryChartsForm extends React.Component{
         
     }
     componentDidMount = ()=>{
-        this.getBranchData();
+        const base = this;
+        const params = {
+            type:base.state.chartsType,
+            beginMonth:base.state.beginMonth,
+            endMonth:base.state.endMonth,
+        }
+        base.onSearchChartsData(params);
     }    
     
     // 获取网点信息
-    getBranchData=()=>{
+    getBranchsData=(keywords)=>{
         const base = this;
-        ChSearch.branchList(function(list){
+        const params={keywords:keywords};
+        ChSearch.branchList(params,function(list){
             base.setState({
                 branchData:list,
-            });
-            const params = {
-                type:base.state.chartsType,
-                beginMonth:base.state.beginMonth,
-                endMonth:base.state.endMonth,
-            }
-            base.onSearchChartsData(params);
-        })
+            });                      
+        });
     }
+    onSearchBranch=(keywords)=>{
+        this.getBranchsData(keywords);
+    }
+
     // 设置图表数据类型
     onChartChangeType = (e)=>{
         e.preventDefault();
@@ -269,7 +275,7 @@ class CategoryChartsForm extends React.Component{
         if(this.state.chartsType == 'branch'){
             formPanel = getFieldDecorator('branchIds',
             {rules:[{required:false,message:"请选择要统计的网点（一般选多个）"}],
-            })(<Select maxTagCount = {6} mode="multiple" placeholder="选择网点" style={{width:"500px",marginRight:"10px"}}>
+            })(<Select showArrow={false} filterOption={false} onSearch={this.onSearchBranch.bind(this)} maxTagCount = {6} mode="multiple" placeholder="查询网点" style={{width:"500px",marginRight:"10px"}}>
             {branchDatas}
             </Select>);
             barItem = <Bar position="网点*值" color="金额类型" adjust={[{ type: 'dodge', marginRatio: 1 / 32 }]} />

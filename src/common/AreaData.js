@@ -9709,10 +9709,6 @@ const AreaData = [
                     {
                         "value": "永川区", 
                         "label": "永川区"
-                    }, 
-                    {
-                        "value": "永川区", 
-                        "label": "永川区"
                     }
                 ]
             }, 
