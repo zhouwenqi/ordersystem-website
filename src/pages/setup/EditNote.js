@@ -97,8 +97,9 @@ class EditNoteFrom extends React.Component {
         const base = this;
         base.setState({
             loading:true,
-        })
-        HttpUtils.post('/api/note/create',params).then(function(response){
+        });
+        params.id = this.props.match.params.id;
+        HttpUtils.post('/api/note/update',params).then(function(response){
             base.setState({
                 loading:false
             });

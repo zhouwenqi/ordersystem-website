@@ -86,7 +86,7 @@ class LoginPageForm extends React.Component {
                                 {getFieldDecorator('autoLogin',{
                                     rules:[{required:false}],
                                 })(<Checkbox>自动登录</Checkbox>)}                                      
-                                    <a className="login-form-forgot" href="javascript:void(0)" onClick={this.forgotPassword}>找回密码</a>                          
+                                    <a href="javascript:;" className="login-form-forgot" onClick={this.forgotPassword}>找回密码</a>   
                                 </Row>
                                 <Row>
                                     <Button htmlType="submit" size="large" type="primary" block>登录</Button>  

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types'
 import cookie from 'react-cookies';
 import { Route, Link } from 'react-router-dom';
-import { Layout, Menu, Icon,Row,Col,Modal } from 'antd';
+import { Layout, Menu, Icon,Row,Col,Modal,Badge } from 'antd';
 import WebUtils from '../utils/WebUtils';
 import HttpUtils from '../utils/HttpUtils';
 import OrderList from './orders/OrderList';
@@ -95,6 +95,7 @@ class MainPage extends React.Component {
             this.props.history.push("/login");            
         }else{
             window.config.token = cookie.load("chToken");
+            window.wsconnection();
         }
         const pathName = WebUtils.getRouteName(this.props.location.pathname);
         var menuItemTag = pathName;
@@ -263,6 +264,7 @@ class MainPage extends React.Component {
         if(this.state.isLogin){
             const user = window.config.user;
             topInfo = <div className="head-top-info">
+                <a href="javascript:;" style={{marginRight:"20px"}}><Badge count={5}><Icon type="bell" /><label>消息</label></Badge></a>
                 <Icon type="user" /><label>{user.realName}<span>（</span><span style={{color:"#4ECC05"}}>{user.uid}</span><span>）</span></label>|<span className="slide">{WebUtils.getEnumTag(Role,user.role)}</span>
                 {fullScreen}
                 <a href="javascript:;" onClick={this.onExit}><Icon title="退出登录" type="poweroff" /></a>
