@@ -263,9 +263,9 @@ class MainPage extends React.Component {
         }
         if(this.state.isLogin){
             const user = window.config.user;
-            topInfo = <div className="head-top-info">
-                <a href="javascript:;" style={{marginRight:"20px"}}><Badge count={5}><Icon type="bell" /><label>消息</label></Badge></a>
-                <Icon type="user" /><label>{user.realName}<span>（</span><span style={{color:"#4ECC05"}}>{user.uid}</span><span>）</span></label>|<span className="slide">{WebUtils.getEnumTag(Role,user.role)}</span>
+            topInfo = <div className="head-top-info">                
+                <Icon type="user" style={{marginRight:"4px"}} /><label>{user.realName}<span>（</span><span style={{color:"#4ECC05"}}>{user.uid}</span><span>）</span></label>|<span className="slide">{WebUtils.getEnumTag(Role,user.role)}</span>
+                <a href="javascript:;" style={{marginRight:"20px"}}><Badge style={{boxShadow:"none"}} count={5}><Icon type="bell" style={{margin:"0px 4px",color:"white"}} /><label>消息</label></Badge></a>
                 {fullScreen}
                 <a href="javascript:;" onClick={this.onExit}><Icon title="退出登录" type="poweroff" /></a>
             </div>;
