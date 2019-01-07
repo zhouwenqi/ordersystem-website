@@ -74,7 +74,7 @@ class CreateNoteFrom extends React.Component {
         base.setState({
             loading:true,
         })        
-        HttpUtils.post('/api/note/update',params).then(function(response){
+        HttpUtils.post('/api/note/create',params).then(function(response){
             base.setState({
                 loading:false
             });

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types'
 import cookie from 'react-cookies';
 import { Route, Link } from 'react-router-dom';
-import { Layout, Menu, Icon,Row,Col,Modal,Badge } from 'antd';
+import { Layout, Menu, Icon,Row,Col,Modal,Badge,notification } from 'antd';
 import WebUtils from '../utils/WebUtils';
 import HttpUtils from '../utils/HttpUtils';
 import OrderList from './orders/OrderList';
@@ -74,6 +74,7 @@ class MainPage extends React.Component {
         isFollow:false,
         isLogin:false,
         isFullScreen:false,
+        messageCount:0,
     }
 
     static childContextTypes = {
@@ -160,14 +161,46 @@ class MainPage extends React.Component {
                 isManager:isManager,
                 isFollow:isFollow,
                 isLogin:true,
-            })
-
+            });  
+            
+            window.wsSetFunc(base.onOpenNotification);
+            // window.wsFunc();
+            base.onGetMessageList();
         });
+
     }
     handlerClick=(e)=>{
         this.setState({
             currentMenuIndex:e.key
         })
+    }
+
+    /**
+     * 获取消息列表
+     */
+    onGetMessageList=()=>{
+        const base = this;
+        HttpUtils.get('/api/message/home').then(function(response){
+            if(response){               
+                // 只设置数量
+                base.setState({
+                    messageCount:response.list.length
+                })
+            }
+        });
+    }
+
+    /**
+     * 弹出消息提醒
+     */
+    onOpenNotification=()=>{        
+        notification.open({
+            message: '消息提醒',
+            description: '系统产生一条新的工单',
+            onClick: () => {
+            },
+          });  
+        this.onGetMessageList();      
     }
 
     /**
@@ -193,7 +226,24 @@ class MainPage extends React.Component {
         onOk:()=>{
             window.location.href="/logout";
         },
-        onCancel:()=>{}})
+        onCancel:()=>{
+        }})
+    }
+    /**
+     * 阅读消息
+     */
+    onReadMessage=()=>{
+        const data = {
+            isReadAll:true,
+        }
+        const base = this;
+        HttpUtils.post('/api/message/read',data).then(function(response){
+            if(response){
+                base.setState({
+                    messageCount:0,
+                })
+            }
+        });
     }
    
     render(){        
@@ -261,11 +311,16 @@ class MainPage extends React.Component {
         if(this.state.isFullScreen){
             fullScreen = <a href="javascript:;" style={{marginRight:"10px"}} onClick={this.onFullScreen}><Icon title="退出全屏" type="fullscreen-exit" /></a>
         }
+        // 消息提提醒（只有后台管理操作员和跟单员有权限）
+        let bellInfo = undefined;
+        if(this.state.isAdmin || this.state.isFollow){
+            bellInfo = <a href="javascript:;" onClick={this.onReadMessage.bind(this)} style={{marginRight:"20px"}}><Badge style={{boxShadow:"none"}} count={this.state.messageCount}><Icon type="bell" style={{margin:"0px 4px",color:"white"}} /><label>消息</label></Badge></a>;
+        }
         if(this.state.isLogin){
             const user = window.config.user;
             topInfo = <div className="head-top-info">                
                 <Icon type="user" style={{marginRight:"4px"}} /><label>{user.realName}<span>（</span><span style={{color:"#4ECC05"}}>{user.uid}</span><span>）</span></label>|<span className="slide">{WebUtils.getEnumTag(Role,user.role)}</span>
-                <a href="javascript:;" style={{marginRight:"20px"}}><Badge style={{boxShadow:"none"}} count={5}><Icon type="bell" style={{margin:"0px 4px",color:"white"}} /><label>消息</label></Badge></a>
+                {bellInfo}
                 {fullScreen}
                 <a href="javascript:;" onClick={this.onExit}><Icon title="退出登录" type="poweroff" /></a>
             </div>;
