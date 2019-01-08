@@ -68,7 +68,7 @@ class LoginPageForm extends React.Component {
                                 
                             </a>                            
                         </div>
-                        <div className="login-layout-top-desc">订单在线管理系统V1.0</div>
+                        <div className="login-layout-top-desc">订单在线管理系统V1.1</div>
                     </div>                    
                     <div className="login-layout-form">                        
                         <Form onSubmit={this.handleSubmit}>

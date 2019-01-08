@@ -93,12 +93,20 @@ class Index extends BasePage {
         requests.push(HttpUtils.get("/api/note/home"));
         // 获取订单事件信息
         requests.push(HttpUtils.get("/api/order/event/home"));
-        axios.all(requests).then(axios.spread(function(orderTotal,userTotal,noteInfo,orderEventInfo){                    
+        axios.all(requests).then(axios.spread(function(orderTotal,userTotal,noteInfo,orderEventInfo){ 
+            let note = {
+                content:<div className="noteNull">暂无公告</div>,
+                title:undefined,
+                createDate:undefined,            
+            };     
+            if(noteInfo.note) {
+                note = noteInfo.note;
+            }
             base.setState({
                 loading:false,
                 userTotal:userTotal.chartData,
+                noteInfo:note,
                 orderTotal:orderTotal.total,
-                noteInfo:noteInfo.note,
                 orderEventData:orderEventInfo.list,
             });
         }));          
@@ -124,7 +132,7 @@ class Index extends BasePage {
         }
 
         let noteTitle = "最新公告";
-        if(noteInfo){
+        if(noteInfo.title){
             noteTitle += " - " + noteInfo.title;
         }
 
