@@ -45,7 +45,7 @@ class OrderStatusDropDown extends React.Component {
         const orderStatus = WebUtils.getEnumTag(OrderStatus,order.orderStatus);
         const subMenu = <Menu onClick={(sender)=>{this.onUpateOrderStatus(sender)}}>
             <Menu.Item key="pending">待派单</Menu.Item>
-            <Menu.Item key="ongoing">更进中</Menu.Item>
+            <Menu.Item key="ongoing">跟进中</Menu.Item>
             <Menu.Item key="waitCheck">待验收</Menu.Item>
             <Menu.Item key="complete">已完结</Menu.Item>
             <Menu.Item key="cancel">已取消</Menu.Item>

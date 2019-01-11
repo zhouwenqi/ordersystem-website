@@ -266,9 +266,9 @@ class CreateOrderForm extends BasePage {
                                     <Row>
                                         <Col span={24}>
                                             <FormItem {...formItemLayout}
-                                                label="安装路数">
+                                                label="安装点位">
                                                 {getFieldDecorator('routeQuantity',
-                                                {rules:[{required:true,message:'安装路数0-500'}],initialValue:0
+                                                {rules:[{required:true,message:'安装点位0-500'}],initialValue:0
                                                 })(<InputNumber min={0} max={500} precision={0} />)} 
                                             </FormItem>
                                         </Col>

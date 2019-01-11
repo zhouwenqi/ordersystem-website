@@ -16,6 +16,7 @@ import OrderType from '../common/OrderType';
 import HttpUtils from '../utils/HttpUtils';
 import Moment from 'moment';
 import AreaData from '../common/AreaData';
+import ChSearch from '../components/ChSearch';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -43,6 +44,7 @@ class OrderSearchForm extends React.Component {
         this.state={
             searchData:{},
             trackData:[],
+            branchData:[],
         }     
     } 
 
@@ -60,6 +62,25 @@ class OrderSearchForm extends React.Component {
                 trackData:response.list,
             });
         });
+    }
+
+    /**
+     * 获取网点列表
+     */
+    getBranchsData=(keywords)=>{
+        const base = this;
+        const params={keywords:keywords};
+
+        ChSearch.branchList(params,function(list){
+            base.setState({
+                branchData:list,
+            })
+        });
+    }
+
+    // 查询网点
+    onSearchBranch=(keywords)=>{
+        this.getBranchsData(keywords);
     }
     
     render=()=>{
@@ -79,6 +100,11 @@ class OrderSearchForm extends React.Component {
         let trackDatas = [<Option key={-1} value="">所有人</Option>];
         this.state.trackData.map((item,index)=>{
             trackDatas.push(<Option key={index} value={item.id}>{item.uid}({item.realName})</Option>);
+        });
+        // 设置网点下拉框数据
+        let branchs = [<Option key={-1} value="">任何网点</Option>]
+        this.state.branchData.map((item,index)=>{
+            branchs.push(<Option key={index} value={item.id}>{item.name}</Option>);
         });
 
         let trackFormItem = undefined;
@@ -129,6 +155,18 @@ class OrderSearchForm extends React.Component {
                                     {rules:[{required:false}]
                                     })(<Cascader changeOnSelect={true} options={AreaData} placeholder="请选择" />)} 
                                 </FormItem>                     
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col span={24}>
+                                <FormItem {...formItemLayout}
+                                    label="所属网点">
+                                    {getFieldDecorator('branchId',
+                                    {rules:[{required:false}]
+                                    })(<Select showArrow={false} filterOption={false} onSearch={this.onSearchBranch.bind(this)} showSearch>
+                                        {branchs}
+                                    </Select>)} 
+                                </FormItem>                    
                             </Col>
                         </Row>
                         <Row>

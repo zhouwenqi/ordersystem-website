@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
     Form,Icon, Row, Table,Modal,
-    Input,Select,Col,
+    Input,Select,Col,Cascader
 } from 'antd';
+import AreaData from '../../common/AreaData';
 import HttpUtils from '../../utils/HttpUtils';
 import WebUtils from '../../utils/WebUtils';
 
@@ -149,14 +150,29 @@ class BranchListForm extends React.Component{
                 pagination.searchProperty = values.searchProperty;
                 pagination.searchValue = values.searchValue;
                 pagination.pageNumber = 1;
+                let province = undefined;
+                let city = undefined;
+                let area = undefined;
+                if(values.areas.length>0){
+                    province = values.areas[0];
+                }
+                if(values.areas.length>1){
+                    city = values.areas[1];
+                }
+                if(values.areas.length>2){
+                   area = values.areas[2];
+                }
+                pagination.province = province;
+                pagination.city = city;
+                pagination.area = area;
                 base.setState({
                     pageInfo:pagination
                 });
                 base.searchBranch(pagination);
             }
         });
-
     }
+    
     render=()=>{
         const {getFieldDecorator} = this.props.form; 
         const beforeSearchKeys = getFieldDecorator("searchProperty",{initialValue:"name"})(
@@ -172,8 +188,13 @@ class BranchListForm extends React.Component{
             emptyText: '没有找到相关网点信息',
         }
         return (<div className="branch-box">
-            <Form onSubmit={this.handleSubmit}>
-                <Row style={{margin:"0px 0px 10px 0px"}}>                  
+            <Form onSubmit={this.handleSubmit}>            
+                <Row style={{margin:"0px 0px 10px 0px"}}>  
+                    <Col style={{margin:"-2px 10px 0px 0px"}} span={6}>                        
+                        {getFieldDecorator('areas',
+                        {rules:[{required:false}]
+                        })(<Cascader changeOnSelect={true} options={AreaData} placeholder="区域筛选" />)}                                           
+                    </Col>                
                     <Col span={8}>                  
                         <InputGroup>         
                         {getFieldDecorator('searchValue',
@@ -182,8 +203,8 @@ class BranchListForm extends React.Component{
                                 <Search onSearch={this.handleSubmit} addonBefore={beforeSearchKeys} enterButton placeholder="请输入查询关键词" />
                             )}                                                
                         </InputGroup>
-                    </Col>                    
-                </Row>                
+                    </Col>                                        
+                </Row>             
             </Form>
             <Table locale={locale} loading={this.state.loading} pagination={false} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
         </div>)

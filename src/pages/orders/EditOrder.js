@@ -197,15 +197,19 @@ class EditOrderForm extends BasePage {
                 
                 if(user.role==='manager' || user.role==='employee' || user.role==='follow'){                
                     // 获取网点数据
-                    const branchParams = {province:orderInfo.province,city:orderInfo.city,area:orderInfo.area};
-                    let requests = [HttpUtils.get("/api/branch/search",{parans:branchParams})];
+                    const branchParams = {province:orderInfo.province,city:orderInfo.city};
+                    let requests = [HttpUtils.get("/api/branch/search",{params:branchParams})];
                     // 获取项目跟进人数据
                     const trackParams = {role:"follow"};               
                     requests.push(HttpUtils.get("/api/user/list",{params:trackParams}));
-                    axios.all(requests).then(axios.spread(function(branchData,trackData){                    
+                    axios.all(requests).then(axios.spread(function(branchData,trackData){
+                        let branchList = [];
+                        if(orderInfo.province || orderInfo.city || orderInfo.area){
+                            branchList = branchData.list;
+                        }
                         base.setState({
                             trackData:trackData.list,
-                            branchData:branchData.list
+                            branchData:branchList
                         });
                         // 获取上门工程师数据
                         if(orderInfo.branchId){
@@ -240,14 +244,18 @@ class EditOrderForm extends BasePage {
      * 选择地区
      */
     onAreaChange=(e)=>{
-        if(e.length>2) {
-            const areas={
-                province:e[0],
-                city:e[1],
-                area:e[2]
-            }
+        let areas = {
+            province:undefined,
+            city:undefined,
+        }
+        if(e.length>1){
+            areas.province = e[0];
+            areas.city = e[1];
+        }
+        if(e.length===2){
             this.onGetBranchList(areas);
         }
+        
     }
 
     /**
@@ -408,7 +416,7 @@ class EditOrderForm extends BasePage {
      * 提交订单
      */
     submitOrder = (data) =>{
-        data.assignDate = data.assignDate.format("YYYY-MM-DD");
+        data.assignDate = data.assignDate.format("YYYY-MM-DD");        
         if(data.areas.length>0){
             data.province = data.areas[0];
         }
@@ -1279,9 +1287,9 @@ class EditOrderForm extends BasePage {
                                 <Row>
                                     <Col span={24}>
                                         <FormItem {...formItemLayout}
-                                            label="安装路数">
+                                            label="安装点位">
                                             {getFieldDecorator('routeQuantity',
-                                            {rules:[{required:true,message:'安装路数0-500'}],initialValue:order.routeQuantity
+                                            {rules:[{required:true,message:'安装点位0-500'}],initialValue:order.routeQuantity
                                             })(<InputNumber onChange={(e)=>{this.onChangeTotalPrice(e,'routeQuantity')}} min={0} max={500} precision={0} />)} 
                                         </FormItem>
                                     </Col>

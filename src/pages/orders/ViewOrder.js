@@ -500,7 +500,7 @@ class ViewOrder extends BasePage {
                                     <td><span>{order.address}</span></td>                                
                                 </tr>
                                 <tr>
-                                    <th>安装路数：</th>
+                                    <th>安装点位：</th>
                                     <td><span className="num">{order.routeQuantity}</span></td>                               
                                 </tr>
                             </tbody>
