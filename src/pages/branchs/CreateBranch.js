@@ -135,17 +135,7 @@ class CreateBranchForm extends React.Component{
                                                     })(<Input type="text" placeholder="请输入网点名称" />)} 
                                                 </FormItem>                    
                                             </Col>
-                                        </Row>
-                                        <Row>
-                                            <Col span={24}>
-                                                <FormItem {...formItemLayout}
-                                                    label="公司名称">
-                                                    {getFieldDecorator('company',
-                                                    {rules:[{required:true,message:'请输入公司名称',}]
-                                                    })(<Input type="text" placeholder="请输入公司名称" />)} 
-                                                </FormItem>                    
-                                            </Col>
-                                        </Row>
+                                        </Row>                                        
                                         <Row>
                                             <Col span={24}>
                                                 <FormItem {...formItemLayout}
@@ -153,6 +143,16 @@ class CreateBranchForm extends React.Component{
                                                     {getFieldDecorator('phone',
                                                     {rules:[{required:true,message:'请输入联系电话',}]
                                                     })(<Input type="text" placeholder="请输入联系电话" />)} 
+                                                </FormItem>                    
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={24}>
+                                                <FormItem {...formItemLayout}
+                                                    label="电子邮箱">
+                                                    {getFieldDecorator('email',
+                                                    {rules:[{required:true,message:'请输入电子邮箱',}]
+                                                    })(<Input type="text" placeholder="请输入电子邮箱" />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row>
@@ -175,19 +175,7 @@ class CreateBranchForm extends React.Component{
                                                     })(<Input type="text" />)} 
                                                 </FormItem>                    
                                             </Col>
-                                        </Row>
-                                        <Row>
-                                            <Col span={24}>
-                                                <FormItem {...formItemLayout}
-                                                    label="网点负责人">
-                                                    {getFieldDecorator('userId',
-                                                    {rules:[{required:false}]
-                                                    })(<Select placeholder="请选择网点负责人">
-                                                        {users}
-                                                    </Select>)} 
-                                                </FormItem>                    
-                                            </Col>
-                                        </Row>
+                                        </Row>                                        
                                         <Row>                                        
                                             <Col span={24}>
                                                 <FormItem {...btnItemLayout}>

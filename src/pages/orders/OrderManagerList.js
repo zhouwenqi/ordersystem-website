@@ -265,7 +265,10 @@ class OrderListForm extends BasePage {
             }
             if(values.orderStatuss){
                 values.orderStatuss = values.orderStatuss + '';
-            }            
+            }
+            if(values.paymentStatuss)           {
+                values.paymentStatuss = values.paymentStatuss + '';
+            }
             resultData = values;
         });
         return resultData;

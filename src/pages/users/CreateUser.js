@@ -206,18 +206,7 @@ class CreateUserFrom extends React.Component {
                                                 </FormItem>                    
                                             </Col>
                                         </Row>
-                                        <Row>
-                                            <Col span={24}>
-                                                <FormItem {...formItemLayout}
-                                                    label="所属网点">
-                                                    {getFieldDecorator('branchId',
-                                                    {rules:[{required:false}]
-                                                    })(<Select  showArrow={false} filterOption={false} onSearch={this.onSearchBranch.bind(this)} showSearch>
-                                                        {branchs}
-                                                    </Select>)} 
-                                                </FormItem>                    
-                                            </Col>
-                                        </Row>
+                                        
                                         <Row>
                                             <Col span={24}>
                                                 <FormItem {...formItemLayout}

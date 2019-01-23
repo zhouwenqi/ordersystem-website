@@ -5,10 +5,11 @@ import HttpUtils from '../../utils/HttpUtils';
 import WebUtils from '../../utils/WebUtils';
 import moment from 'moment';
 import BasePage from '../BasePage';
-
-import './order.css';
+import OrderSearchFrame from '../../components/OrderSearchForm2';
 import OrderStatus from '../../common/OrderStatus';
 import OrderType from '../../common/OrderType';
+import './order.css';
+
 const Confirm = Modal.confirm;
 const Search = Input.Search;
 const InputGroup = Input.Group;
@@ -29,7 +30,8 @@ class OrderListForm extends BasePage {
             },       
             dataSource:[],
             excelUrl:undefined,
-            loading:false
+            loading:false,            
+            isSearchShow:false,
         };
     }
 
@@ -136,7 +138,10 @@ class OrderListForm extends BasePage {
             loading:true,
         });
 
-        HttpUtils.get("/api/order/search",{params:params}).then(function(response){
+        const superSerachData = base.getSuperSerachData();
+        const searchData = {...params,...superSerachData}
+
+        HttpUtils.get("/api/order/search",{params:searchData}).then(function(response){
             if(response){
                 var pageInfo = response.pageInfo;
                 var pagination = {...base.state.pageInfo};
@@ -207,6 +212,59 @@ class OrderListForm extends BasePage {
         });
 
     }
+    /**
+     * 启动高级查询
+     */
+    onStartSuperSearch=()=>{
+        this.setState({
+            isSearchShow:false,
+        });
+        var pager = {...this.state.pageInfo};
+        this.searchOrder(pager);
+    }
+
+    /**
+     * 获取高级查询参数
+     */
+    getSuperSerachData=()=>{
+        const searchForm = this.searchForm.props.form; 
+        let resultData = undefined;       
+        searchForm.validateFields((err, values) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log("searchParams:",values);
+            
+            if(values.orderStatuss){
+                values.orderStatuss = values.orderStatuss + '';
+            }
+            resultData = values;
+        });
+        return resultData;
+    }
+    /**
+     * 打开高级查询
+     */
+    onOpenSuperSearch=()=>{
+        this.setState({
+            isSearchShow:true,
+        })
+    }
+    /**
+     * 隐藏高级查询
+     */
+    onHiddenSuperSearch=()=>{
+        this.setState({
+            isSearchShow:false,
+        })
+    }
+    /**
+     * 获取高级查询表单
+     */
+    getOrderSearchForm=(searchForm)=>{
+        this.searchForm = searchForm;
+    }
 
     /**
      * 表格点击事件
@@ -228,6 +286,7 @@ class OrderListForm extends BasePage {
         const beforeSearchKeys = getFieldDecorator("searchProperty",{initialValue:"sn"})(
          <Select>
             <Option value="sn">订单号</Option>
+            <Option value="consumer_name">客户名称</Option>
             <Option value="consumer_contact">客户联系人</Option>
             <Option value="consumer_phone">联系电话</Option>
         </Select>);
@@ -237,20 +296,22 @@ class OrderListForm extends BasePage {
                 <iframe src={this.state.excelUrl} />
                 <Form onSubmit={this.handleSubmit}>
                     <Row style={{margin:"0px 0px 10px 0px"}}>
-                        <Col span={6}>
-                            <InputGroup>
+                        <Col span={12}>
+                            <InputGroup style={{width:"auto"}}>
                             {getFieldDecorator('searchValue',
                                 {rules:[{required:false}]
                                 })(                          
                                     <Search onSearch={this.handleSubmit} addonBefore={beforeSearchKeys} enterButton placeholder="请输入查询关键词" />
                                 )}
                             </InputGroup>
+                            <Button onClick={this.onOpenSuperSearch.bind(this)} style={{marginLeft:"10px"}}>高级查询</Button>
                         </Col>
-                        <Col style={{textAlign:"right"}} offset={12} span={6}>                        
+                        <Col style={{textAlign:"right"}} offset={6} span={6}>                        
                             <Button onClick={this.onExportExcel} icon="file-excel">导出Excel</Button>
                         </Col>
                     </Row>
                 </Form>
+                <OrderSearchFrame wrappedComponentRef={this.getOrderSearchForm.bind(this)} onCancel={this.onHiddenSuperSearch.bind(this)} onSearch={this.onStartSuperSearch.bind(this)} visible={this.state.isSearchShow} />
                 <Table footer={this.getTableFooter} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageInfo} onChange={this.handleTableChange} onRow={this.onRowClick} rowKey="id" onHeaderRow={this.headerRowStyle} size="small" columns={this.dataColumns} dataSource={this.state.dataSource} bordered />
             </div>
         );

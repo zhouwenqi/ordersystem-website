@@ -248,13 +248,27 @@ class EditOrderForm extends BasePage {
             province:undefined,
             city:undefined,
         }
+        // 是否是直辖市
+        let isGover = false;
+        if(e.length>0){
+            if(e[0]==='北京市' || e[0]==='上海市' || e[0]==='天津市' || e[0]==='重庆市'){
+                isGover = true; 
+            }
+        }
         if(e.length>1){
             areas.province = e[0];
             areas.city = e[1];
         }
-        if(e.length===2){
+        if(isGover){
+            areas.province = e[0];
+            areas.city = undefined;
             this.onGetBranchList(areas);
+        }else{
+            if(e.length===2){
+                this.onGetBranchList(areas);
+            }
         }
+        
         
     }
 
@@ -479,11 +493,13 @@ class EditOrderForm extends BasePage {
         this.state.branchData.map((item,index)=>{   
                      
             if(item.id===e){                
-                this.getEnginnerList(e);
+                // this.getEnginnerList(e);
                 let orderInfo = {...this.state.orderInfo};
                 orderInfo.bankAccountName = item.bankAccountName;
                 orderInfo.bankAccountCode = item.bankAccountCode;
                 orderInfo.bankName = item.bankName;
+                orderInfo.email = item.email;
+                orderInfo.phone = item.phone;
                 this.setState({
                     currentBranch:item,
                     orderInfo:orderInfo
@@ -707,24 +723,10 @@ class EditOrderForm extends BasePage {
         let branchDatas = [];
         this.state.branchData.map((item,index)=>{
             branchDatas.push(<Option key={index} value={item.id}>{item.name}</Option>);
-        });
-
-        // 设置网点负责人信息
-        let branchUser = {};
-        if(this.state.currentBranch){
-            if(this.state.currentBranch.user){
-                branchUser = this.state.currentBranch.user;
-            }            
-        }
-
-        // 设置工程师数据
-        let enginnerDatas = [];        
-        this.state.enginnerData.map((item,index)=>{
-            enginnerDatas.push(<Option key={index} value={item.id}>{item.uid}({item.realName})</Option>);                       
-        });
-        let enginner = {};
-        if(this.state.currentEnginner){
-            enginner = this.state.currentEnginner;
+        });  
+        let branchData = {}
+        if(this.state.currentBranch) {
+            branchData = this.state.currentBranch;
         }
 
         // 设置请款状态
@@ -738,6 +740,16 @@ class EditOrderForm extends BasePage {
         PaymentMethod.map((item,index)=>{
             orderPaymentMethods.push(<Option key={index} value={item.value}>{item.label}</Option>);
         });
+
+        let followFormDisplay = undefined;
+        let followFormDisabled = false;
+        if(this.state.isFollow){
+            followFormDisplay={
+                display:"none",
+            }
+            followFormDisabled = true;
+        }
+
 
         // 读取当前登录用户信息
         const user = window.config.user; 
@@ -806,35 +818,13 @@ class EditOrderForm extends BasePage {
                                         </Select>)} 
                                     </FormItem>                    
                                 </Col>
-                            </Row>    
-                            <Row>
-                                <Col span={24}>
-                                    <FormItem {...formItemLayout}
-                                        label="网点负责人">
-                                        {getFieldDecorator('branchUserRealName',
-                                        {rules:[{required:false}],initialValue:branchUser.realName
-                                        })(<Input disabled />)} 
-                                    </FormItem>                    
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col span={24}>
-                                    <FormItem {...formItemLayout}
-                                        label="上门工程师">
-                                        {getFieldDecorator('enginnerUserId',
-                                        {rules:[{required:false,}],initialValue:enginner.realName
-                                        })(<Select onSelect={this.onSelectEnginner}>
-                                            {enginnerDatas}
-                                        </Select>)} 
-                                    </FormItem>                    
-                                </Col>
                             </Row> 
                             <Row>
                                 <Col span={24}>
                                     <FormItem {...formItemLayout}
                                         label="联系电话">
                                         {getFieldDecorator('branchEngineerPhone',
-                                        {rules:[{required:false}],initialValue:enginner.phone
+                                        {rules:[{required:false}],initialValue:branchData.phone
                                         })(<Input disabled />)} 
                                     </FormItem>                    
                                 </Col>
@@ -844,7 +834,7 @@ class EditOrderForm extends BasePage {
                                     <FormItem {...formItemLayout}
                                         label="邮箱">
                                         {getFieldDecorator('branchEngineerEmail',
-                                        {rules:[{required:false}],initialValue:enginner.email
+                                        {rules:[{required:false}],initialValue:branchData.email
                                         })(<Input disabled />)} 
                                     </FormItem>                    
                                 </Col>
@@ -853,7 +843,7 @@ class EditOrderForm extends BasePage {
                         <Col span={12}>
                             <Row>
                                 <Col span={24}>
-                                    <FormItem {...formItemLayout}
+                                    <FormItem {...formItemLayout} style={followFormDisplay}
                                         label="每路价格">
                                         {getFieldDecorator('routePrice',
                                         {rules:[{required:true,message:'请填写每路价格(默认为0)'}],initialValue:order.routePrice
@@ -863,7 +853,7 @@ class EditOrderForm extends BasePage {
                             </Row>                          
                             <Row>
                                 <Col span={24}>
-                                    <FormItem {...formItemLayout}
+                                    <FormItem {...formItemLayout} style={followFormDisplay}
                                         label="总价格">
                                         {getFieldDecorator('totalPrice',
                                         {rules:[{required:true,message:'请填写总价格(默认为0)'}],initialValue:order.totalPrice
@@ -893,7 +883,7 @@ class EditOrderForm extends BasePage {
                             </Row>
                             <Row>
                                 <Col span={24}>
-                                    <FormItem {...formItemLayout}
+                                    <FormItem {...formItemLayout} style={followFormDisplay}
                                         label="实际总额">
                                         {getFieldDecorator('actualPrice',
                                         {rules:[{required:true,message:'请填写实际总额(默认为0)'}],initialValue:order.actualPrice
@@ -912,7 +902,7 @@ class EditOrderForm extends BasePage {
                                         label="每路服务费用">
                                         {getFieldDecorator('routeServicePrice',
                                         {rules:[{required:true,message:'请填写每路服务费用(默认为0)'}],initialValue:order.routeServicePrice
-                                        })(<InputNumber onChange={(e)=>{this.onChangePaymentPrice(e,'routeServicePrice')}} min={0} precision={2} />)} 
+                                        })(<InputNumber disabled={followFormDisabled} onChange={(e)=>{this.onChangePaymentPrice(e,'routeServicePrice')}} min={0} precision={2} />)} 
                                     </FormItem>                    
                                 </Col>
                             </Row>
@@ -922,7 +912,7 @@ class EditOrderForm extends BasePage {
                                         label="与网点结算价格">
                                         {getFieldDecorator('branchBalancePrice',
                                         {rules:[{required:true,message:'请填写与网点结算价格(默认为0)'}],initialValue:order.branchBalancePrice
-                                        })(<InputNumber onChange={(e)=>{this.onChangePaymentPrice(e,'branchBalancePrice')}} min={0} precision={2} />)} 
+                                        })(<InputNumber disabled={followFormDisabled} onChange={(e)=>{this.onChangePaymentPrice(e,'branchBalancePrice')}} min={0} precision={2} />)} 
                                     </FormItem>                    
                                 </Col>
                             </Row>
@@ -952,7 +942,7 @@ class EditOrderForm extends BasePage {
                                         label="实际付款金额">
                                         {getFieldDecorator('actualPaymentPrice',
                                         {rules:[{required:true,message:'请填写实际付款金额(默认为0)'}],initialValue:order.actualPaymentPrice
-                                        })(<InputNumber min={0} precision={2} />)} 
+                                        })(<InputNumber disabled={followFormDisabled} min={0} precision={2} />)} 
                                     </FormItem>                    
                                 </Col>
                             </Row>

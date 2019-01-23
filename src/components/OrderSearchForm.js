@@ -1,20 +1,17 @@
 import React from 'react';
 import {
-    Message,Checkbox,
+    Checkbox,
     Row,Select,
     Col,Cascader,
-    Icon,DatePicker,
-    Dropdown,
-    Input,
+    DatePicker,
     Modal,
-    Button,
     Form
 } from 'antd';
 
 import OrderStatus from '../common/OrderStatus';
 import OrderType from '../common/OrderType';
+import PaymentStatus from '../common/PaymentStatus';
 import HttpUtils from '../utils/HttpUtils';
-import Moment from 'moment';
 import AreaData from '../common/AreaData';
 import ChSearch from '../components/ChSearch';
 
@@ -36,7 +33,7 @@ const formItemLayout = {
 };
 
 /**
- * 订单高级查询
+ * 订单高级查询（操作人员）
  */
 class OrderSearchForm extends React.Component {
     constructor(props,context) {
@@ -96,6 +93,12 @@ class OrderSearchForm extends React.Component {
         OrderType.map((item,index)=>{
             orderTypes.push(<Option key={index} value={item.index}>{item.label}</Option>);
         });
+        // 设置支付状态下拉框数据
+        let paymentStatus = [];
+        PaymentStatus.map((item,index)=>{
+            paymentStatus.push(<Option key={index} value={item.index}>{item.label}</Option>);
+        });
+
         // 设置项目跟进人下拉框数据
         let trackDatas = [<Option key={-1} value="">所有人</Option>];
         this.state.trackData.map((item,index)=>{
@@ -146,7 +149,17 @@ class OrderSearchForm extends React.Component {
                                     })(<Select mode="multiple">{orderTypes}</Select>)} 
                                 </FormItem>                    
                             </Col>
-                        </Row>  
+                        </Row> 
+                        <Row>
+                            <Col span={24}>
+                                <FormItem {...formItemLayout}
+                                    label="请款状态">
+                                    {getFieldDecorator('paymentStatuss',
+                                    {rules:[{required:false}]
+                                    })(<Select mode="multiple">{paymentStatus}</Select>)} 
+                                </FormItem>                    
+                            </Col>
+                        </Row>   
                         <Row>
                             <Col span={24}>
                                 <FormItem {...formItemLayout}

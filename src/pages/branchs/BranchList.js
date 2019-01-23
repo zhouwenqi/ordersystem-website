@@ -38,12 +38,11 @@ class BranchListForm extends React.Component{
         // 表格列头
         this.dataColumns = [
             {title:'网点名称',sorter: false,dataIndex:'name'},
-            {title:'公司名称',sorter: false,dataIndex:'company'},
-            {title:'联系电话',width:200,sorter: false,dataIndex:'phone'},
+            {title:'联系电话',width:200,sorter: false,dataIndex:'phone'},            
+            {title:'电子邮箱',sorter: false,dataIndex:'email'},
             {title:'省',sorter: false,dataIndex:'province'},
             {title:'市',sorter: false,dataIndex:'city'},
             {title:'区',width:200,sorter: false,dataIndex:'area'},
-            {title:'负责人',width:200,sorter: false,dataIndex:'userId',render:(id,record)=>(record.user?record.user.uid:undefined)},
             {title:'创建时间',width:160,sorter: false,dataIndex:'createDate'},
             {title:'操作',width:80,dataIndex:'',render:(id,record)=>(this.getOperationMenus(record))}
         ];
@@ -178,8 +177,8 @@ class BranchListForm extends React.Component{
         const beforeSearchKeys = getFieldDecorator("searchProperty",{initialValue:"name"})(
             <Select style={{minWidth:"120px"}}>
                <Option value="name">网点名称</Option>
-               <Option value="company">公司名称</Option>
                <Option value="phone">联系电话</Option>
+               <Option value="email">电子邮箱</Option>
            </Select>);
         const locale = {
             filterTitle: '筛选',

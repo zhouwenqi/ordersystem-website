@@ -201,19 +201,7 @@ class EditUserFrom extends React.Component {
 
         let adminUserInfo = undefined;
         if(window.config.user.role==='manager'){
-            adminUserInfo = <React.Fragment>
-            <Row>
-                <Col span={24}>
-                    <FormItem {...formItemLayout}
-                        label="所属网点">
-                        {getFieldDecorator('branchId',
-                        {rules:[{required:false}],initialValue:user.branchId
-                        })(<Select showArrow={false} filterOption={false} onSearch={this.onSearchBranch.bind(this)} showSearch>
-                            {branchs}
-                        </Select>)} 
-                    </FormItem>                    
-                </Col>
-            </Row>
+            adminUserInfo = <React.Fragment>            
             <Row>
                 <Col span={24}>
                     <FormItem {...formItemLayout}
