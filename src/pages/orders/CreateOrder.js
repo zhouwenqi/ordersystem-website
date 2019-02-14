@@ -70,7 +70,9 @@ class CreateOrderForm extends BasePage {
      */
     submitOrder = (data) =>{
         data.assignDate = data.assignDate.format("YYYY-MM-DD");
-        data.orderTime = data.orderTime.format("YYYY-MM-DD");
+        if(data.orderTime){
+            data.orderTime = data.orderTime.format("YYYY-MM-DD");
+        }
         if(data.areas.length>0){
             data.province = data.areas[0];
         }

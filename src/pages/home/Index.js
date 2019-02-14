@@ -64,6 +64,7 @@ class Index extends BasePage {
                 createDate:undefined,            
             },
             orderEventData:[],
+            isFollow:true,
         }
     }
     
@@ -78,6 +79,9 @@ class Index extends BasePage {
         }else{
             this.getIndexData();
         }
+        base.setState({
+            isFollow:this.getIsFollow()
+        });
     }
 
     getIndexData=()=>{        
@@ -136,6 +140,11 @@ class Index extends BasePage {
             noteTitle += " - " + noteInfo.title;
         }
 
+        let userMoreBtn = undefined;
+        if(!this.state.isFollow){
+            userMoreBtn = <Link to='/dash/order'>更多</Link>;
+        }
+
         if(this.getIsBaseAccess()){
             bodyHtml = 
             <div className="home-box">
@@ -163,7 +172,7 @@ class Index extends BasePage {
                         <div className="card-box" style={{marginTop:"20px"}}>
                             <div className="card-head">
                                 <div className="card-head-left"><Icon style={{color:"#23cb16",marginRight:"12px"}} type="user"></Icon>用户信息</div>
-                                <div className="card-head-right"><Link to='/dash/user/list'>更多</Link></div>
+                                <div className="card-head-right">{userMoreBtn}</div>
                             </div>
                             <div className="card-charts">
                                 <div className="charts-title">用户权限分类</div>

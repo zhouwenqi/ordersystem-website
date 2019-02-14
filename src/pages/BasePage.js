@@ -18,5 +18,10 @@ class BasePage extends React.Component {
         }
         return false;
     }
+    // 判断是否是跟单员
+    getIsFollow = ()=>{
+        const user = window.config.user; 
+        return user.role ==='follow';
+    }
 }
 export default BasePage;

@@ -453,7 +453,7 @@ class ViewOrder extends BasePage {
                                 </tr>
                                 <tr>
                                     <th>订单来源：</th>
-                                    <td><span>{WebUtils.getViewUserName(order.orderUser)}</span></td>
+                                    <td><span>{WebUtils.getSelectCustomerName(order.orderUser)}</span></td>
                                     <th>创建时间：</th>
                                     <td><span>{order.createDate}</span></td>
                                 </tr>

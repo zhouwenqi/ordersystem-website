@@ -201,7 +201,7 @@ class CreateUserFrom extends React.Component {
                                                 <FormItem {...formItemLayout}
                                                     label="邮箱">
                                                     {getFieldDecorator('email',
-                                                    {rules:[{required:true,pattern:/^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/,message:'请输入正确的邮箱'}]
+                                                    {rules:[{required:true,pattern:/^([a-zA-Z0-9._-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/,message:'请输入正确的邮箱'}]
                                                     })(<Input placeholder="请输入邮箱" />)} 
                                                 </FormItem>                    
                                             </Col>
