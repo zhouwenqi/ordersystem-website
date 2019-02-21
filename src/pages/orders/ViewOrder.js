@@ -266,7 +266,7 @@ class ViewOrder extends BasePage {
 
             // 订单详情
             let TabPaneMore = undefined;     
-            // 订单帐号信息
+            // 订单账务信息
             let TabPanePayment = undefined;
             // 订单实时状态
             let TabPaneEvent = undefined;
@@ -281,7 +281,7 @@ class ViewOrder extends BasePage {
                             <tbody>
                                 <tr>
                                     <th>项目跟进人：</th>
-                                    <td><span>{WebUtils.getViewUserName(order.traceUser)}</span></td>
+                                    <td><span>{WebUtils.getViewUserName(order.trackUser)}</span></td>
                                     <th>每路价格：</th>
                                     <td><span className="num">￥{order.routePrice}</span></td>
                                 </tr>
@@ -290,28 +290,16 @@ class ViewOrder extends BasePage {
                                     <td><span>{order.branch?order.branch.name:undefined}</span></td>
                                     <th>总价格：</th>
                                     <td><span className="num">￥{order.totalPrice}</span></td>
-                                </tr>
-                                <tr>
-                                    <th>网点负责人：</th>
-                                    <td><span>{WebUtils.getViewUserName(branchUser)}</span></td>
-                                    <th>厂商其它费用：</th>
-                                    <td><span className="num">￥{order.otherPrice}</span></td>
-                                </tr>
-                                <tr>
-                                    <th>上门工程师：</th>
-                                    <td><span>{WebUtils.getViewUserName(order.traceUser)}</span></td>
-                                    <th>厂商其它费用说明：</th>
-                                    <td><span>{order.otherPriceDescription}</span></td>
-                                </tr>
+                                </tr>                                
                                 <tr>
                                     <th>联系电话：</th>
-                                    <td><span>{order.traceUser?order.traceUser.phone:undefined}</span></td>
+                                    <td><span>{order.branch?order.branch.phone:undefined}</span></td>
                                     <th>实际总额：</th>
                                     <td><span className="num">￥{order.actualPrice}</span></td>
                                 </tr>
                                 <tr>
                                     <th>邮箱：</th>
-                                    <td><span>{order.traceUser?order.traceUser.email:undefined}</span></td>
+                                    <td><span>{order.branch?order.branch.email:undefined}</span></td>
                                     <th>每路服务费用：</th>
                                     <td><span className="num">￥{order.routeServicePrice}</span></td>
                                 </tr>
@@ -338,7 +326,7 @@ class ViewOrder extends BasePage {
                     </div>
                 </TabPane>;
 
-                TabPanePayment = <TabPane tab="帐务信息" key="payment-info">
+                TabPanePayment = <TabPane tab="账务信息" key="payment-info">
                     <div className="view-box">
                         <table className="view-table">
                             <tbody>
@@ -349,15 +337,15 @@ class ViewOrder extends BasePage {
                                     <td><span>{WebUtils.getEnumTag(PaymentMethod,order.paymentMethod)}</span></td>
                                 </tr>
                                 <tr>
-                                    <th>网点收款银行帐号：</th>
+                                    <th>网点收款银行账号：</th>
                                     <td><span>{order.bankAccountCode}</span></td>
-                                    <th>是否已对帐：</th>
+                                    <th>是否已对账：</th>
                                     <td><span>{order.isChecked?'是':'否'}</span></td>
                                 </tr>
                                 <tr>
                                     <th>收款行支行名称：</th>
                                     <td><span>{order.bankName}</span></td>
-                                    <th>对帐时间：</th>
+                                    <th>对账时间：</th>
                                     <td><span>{order.checkedDate?Moment(order.checkedDate).format("YYYY-MM-DD"):undefined}</span></td>
                                 </tr>
                                 <tr>
@@ -428,7 +416,7 @@ class ViewOrder extends BasePage {
                         <thead>
                             <tr>
                                 <td style={{width:"200px"}}>订单编号</td>
-                                <td style={{width:"200px"}}>帐号</td>
+                                <td style={{width:"200px"}}>账号</td>
                                 <td>状态描述</td>
                                 <td style={{width:"200px"}}>时间</td>
                             </tr> 

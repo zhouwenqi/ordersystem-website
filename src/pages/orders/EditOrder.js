@@ -198,6 +198,9 @@ class EditOrderForm extends BasePage {
                 if(user.role==='manager' || user.role==='employee' || user.role==='follow'){                
                     // 获取网点数据
                     const branchParams = {province:orderInfo.province,city:orderInfo.city};
+                    if(WebUtils.getIsGover(orderInfo.province)){
+                        branchParams.city = undefined;
+                    }
                     let requests = [HttpUtils.get("/api/branch/search",{params:branchParams})];
                     // 获取项目跟进人数据
                     const trackParams = {role:"follow"};               
@@ -205,6 +208,7 @@ class EditOrderForm extends BasePage {
                     axios.all(requests).then(axios.spread(function(branchData,trackData){
                         let branchList = [];
                         if(orderInfo.province || orderInfo.city || orderInfo.area){
+                            console.log("orderInfo.address");
                             branchList = branchData.list;
                         }
                         base.setState({
@@ -212,9 +216,10 @@ class EditOrderForm extends BasePage {
                             branchData:branchList
                         });
                         // 获取上门工程师数据
-                        if(orderInfo.branchId){
-                            base.getEnginnerList(orderInfo.branchId);
-                        }                        
+                        // if(orderInfo.branchId){
+                        //     base.getEnginnerList(orderInfo.branchId);
+                        // }   
+                        console.log("branchs:",base.state.branchData);                     
                     })); 
                     
                     
@@ -251,7 +256,7 @@ class EditOrderForm extends BasePage {
         // 是否是直辖市
         let isGover = false;
         if(e.length>0){
-            if(e[0]==='北京市' || e[0]==='上海市' || e[0]==='天津市' || e[0]==='重庆市'){
+            if(WebUtils.getIsGover(e[0])){
                 isGover = true; 
             }
         }
@@ -334,9 +339,7 @@ class EditOrderForm extends BasePage {
         })
         this.searchProjectFile(pager);
     }
-    /**
-     * 难收文件切换页码
-     */
+    
     /**
      * 切换页码
      */
@@ -522,6 +525,14 @@ class EditOrderForm extends BasePage {
                 console.log("item",item);
             }
         });
+    }
+
+    /**
+     * 调整安装点数
+     */
+    onChangeRouteNumber=(e,tag)=>{
+        this.onChangeTotalPrice(e,tag);
+        this.onChangePaymentPrice(e,tag);
     }
 
     /**
@@ -765,7 +776,7 @@ class EditOrderForm extends BasePage {
         if(order){
             // 订单详情
             let TabPaneMore = undefined;     
-            // 订单帐号信息
+            // 订单账号信息
             let TabPanePayment = undefined;
             // 订单实时状态
             let TabPaneEvent = undefined;
@@ -950,7 +961,7 @@ class EditOrderForm extends BasePage {
                     </Row>                    
                 </TabPane>;
 
-                TabPanePayment = <TabPane tab="帐务信息" key="payment-info">
+                TabPanePayment = <TabPane tab="账务信息" key="payment-info">
                     <Row>
                         <Col span={12}>
                             <Row>
@@ -966,7 +977,7 @@ class EditOrderForm extends BasePage {
                             <Row>
                                 <Col span={24}>
                                     <FormItem {...formItemLayout}
-                                        label="网点收款银行帐号">
+                                        label="网点收款银行账号">
                                         {getFieldDecorator('bankAccountCode',
                                         {rules:[{required:false}],initialValue:order.bankAccountCode
                                         })(<Input />)} 
@@ -1034,20 +1045,20 @@ class EditOrderForm extends BasePage {
                             <Row>
                                 <Col span={24}>
                                     <FormItem {...formItemLayout}
-                                        label="是否已对帐">
+                                        label="是否已对账">
                                         {getFieldDecorator('isChecked',
                                         {rules:[{required:false}],initialValue:this.state.isChecked
-                                        })(<Checkbox checked={this.state.isChecked} onChange={this.onChangeCheckbox} placeholder="是否已对帐" />)} 
+                                        })(<Checkbox checked={this.state.isChecked} onChange={this.onChangeCheckbox} placeholder="是否已对账" />)} 
                                     </FormItem>                    
                                 </Col>
                             </Row>
                             <Row>
                                 <Col span={24}>
                                     <FormItem {...formItemLayout}
-                                        label="对帐时间">
+                                        label="对账时间">
                                         {getFieldDecorator('checkedDate',
                                         {rules:[{required:false}],initialValue:order.checkedDate?Moment(order.checkedDate,"YYYY-MM-DD"):null
-                                        })(<DatePicker placeholder="选择对帐时间" />)} 
+                                        })(<DatePicker placeholder="选择对账时间" />)} 
                                     </FormItem>                    
                                 </Col>
                             </Row>
@@ -1153,7 +1164,7 @@ class EditOrderForm extends BasePage {
                         <thead>
                             <tr>
                                 <td style={{width:"200px"}}>订单编号</td>
-                                <td style={{width:"200px"}}>帐号</td>
+                                <td style={{width:"200px"}}>账号</td>
                                 <td>状态描述</td>
                                 <td style={{width:"200px"}}>时间</td>
                                 <td style={{width:"80px"}}>操作</td>
@@ -1280,7 +1291,7 @@ class EditOrderForm extends BasePage {
                                             label="安装点位">
                                             {getFieldDecorator('routeQuantity',
                                             {rules:[{required:true,message:'安装点位0-500'}],initialValue:order.routeQuantity
-                                            })(<InputNumber onChange={(e)=>{this.onChangeTotalPrice(e,'routeQuantity')}} min={0} max={500} precision={0} />)} 
+                                            })(<InputNumber onChange={(e)=>{this.onChangeRouteNumber(e,'routeQuantity')}} min={0} max={500} precision={0} />)} 
                                         </FormItem>
                                     </Col>
                                 </Row> 

@@ -122,7 +122,7 @@ class EditBranchForm extends React.Component{
     componentWillMount = () =>{
         // 表格列头
         this.dataColumns = [
-            {title:'帐号',dataIndex:'uid'},
+            {title:'账号',dataIndex:'uid'},
             {title:'真实姓名',dataIndex:'realName'},
             {title:'联系电话',dataIndex:'phone'},
             {title:'邮箱',dataIndex:'email'},
@@ -300,7 +300,7 @@ class EditBranchForm extends React.Component{
                                     </Col>
                                 </Row>                                
                             </TabPane>
-                            <TabPane tab="收款帐户" key="payment-info">                                                    
+                            <TabPane tab="收款账户" key="payment-info">                                                    
                                 <Row>
                                     <Col span={12}>                                                     
                                         <Row>
@@ -316,10 +316,10 @@ class EditBranchForm extends React.Component{
                                         <Row>
                                             <Col span={24}>
                                                 <FormItem {...formItemLayout}
-                                                    label="收款银行帐号">
+                                                    label="收款银行账号">
                                                     {getFieldDecorator('bankAccountCode',
                                                     {rules:[{required:false}],initialValue:branch.bankAccountCode
-                                                    })(<Input type="text" placeholder="请输入收款银行帐号" />)} 
+                                                    })(<Input type="text" placeholder="请输入收款银行账号" />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row>

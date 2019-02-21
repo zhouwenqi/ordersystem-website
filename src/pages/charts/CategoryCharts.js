@@ -13,7 +13,7 @@ const Option = Select.Option;
 const { MonthPicker  } = DatePicker;
 
 /**
- * 分类帐务统计
+ * 分类账务统计
  */
 class CategoryChartsForm extends React.Component{
     constructor(props,context) {
@@ -317,7 +317,7 @@ class CategoryChartsForm extends React.Component{
                     </Row>
                 </Form>
                 <div className="charts-box">
-                    <div className="charts-title">分类帐务统计</div>
+                    <div className="charts-title">分类账务统计</div>
                     <Chart forceFit height={500} data={chartsData}>
                         <Tooltip />
                         <Axis />

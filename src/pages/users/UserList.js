@@ -203,7 +203,7 @@ class UserListForm extends React.Component{
         const {getFieldDecorator} = this.props.form; 
         const beforeSearchKeys = getFieldDecorator("searchProperty",{initialValue:"uid"})(
             <Select style={{minWidth:"120px"}}>
-               <Option value="uid">帐号</Option>
+               <Option value="uid">账号</Option>
                <Option value="real_name">真实姓名</Option>
                <Option value="phone">联系电话</Option>
                <Option value="email">邮箱</Option>

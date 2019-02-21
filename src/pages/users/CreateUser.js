@@ -129,10 +129,10 @@ class CreateUserFrom extends React.Component {
                                         <Row>
                                             <Col span={24}>
                                                 <FormItem {...formItemLayout}
-                                                    label="登录帐号">
+                                                    label="登录账号">
                                                     {getFieldDecorator('uid',
-                                                    {rules:[{required:true,pattern:/^(((1[0-9]))+\d{9})$/,message:'请输入手机号作用登录帐号',}]
-                                                    })(<Input type="text" placeholder="请输入登录帐号" />)} 
+                                                    {rules:[{required:true,pattern:/^(((1[0-9]))+\d{9})$/,message:'请输入手机号作用登录账号',}]
+                                                    })(<Input type="text" placeholder="请输入登录账号" />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row>
@@ -162,7 +162,7 @@ class CreateUserFrom extends React.Component {
                                                     label="真实姓名">
                                                     {getFieldDecorator('realName',
                                                     {rules:[{required:true,pattern:/^[\u4E00-\u9FA5A-Za-z]+$/,message:'请输入真实姓名',}]
-                                                    })(<Input type="text" placeholder="请输入登录帐号" />)} 
+                                                    })(<Input type="text" placeholder="请输入登录账号" />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row>                                                                             

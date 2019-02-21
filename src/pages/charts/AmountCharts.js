@@ -12,7 +12,7 @@ const Option = Select.Option;
 const { RangePicker } = DatePicker;
 
 /**
- * 帐务信息统计
+ * 账务信息统计
  */
 class AmountChartsForm extends React.Component{
     constructor(props,context) {
@@ -51,7 +51,7 @@ class AmountChartsForm extends React.Component{
         this.getAmountChartsData();
     }
     /**
-     * 获取帐务统计数据
+     * 获取账务统计数据
      */
     getAmountChartsData(params={}){
         if(params.dates && params.dates.length===2){
@@ -158,7 +158,7 @@ class AmountChartsForm extends React.Component{
                     </Row>
                 </Form>
                 <div className="charts-box">
-                    <div className="charts-title">帐务信息统计</div>
+                    <div className="charts-title">账务信息统计</div>
                     <Chart padding={[60,60]} forceFit height={500} data={data}>
                         <Tooltip />
                         <Axis />

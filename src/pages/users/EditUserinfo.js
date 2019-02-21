@@ -6,6 +6,7 @@ import {
     Breadcrumb, Row, Message, Modal,
     Radio, Col,Select
 } from 'antd';
+import BasePage from '../BasePage';
 import HttpUtils from '../../utils/HttpUtils';
 import ChSearch from '../../components/ChSearch';
 import Role from '../../common/Role';
@@ -38,7 +39,7 @@ const btnItemLayout = {
 /**
  * 修改用户资料
  */
-class EditUserFrom extends React.Component {
+class EditUserFrom extends BasePage {
     constructor(props,context) {
         super(props,context);
         this.state = {
@@ -224,6 +225,11 @@ class EditUserFrom extends React.Component {
             </Row>
             </React.Fragment>;
         }
+
+        let isNeedEditCompany = false;
+        if(this.getIsBaseAccess()){
+            isNeedEditCompany = true;
+        }
        
         return (
             <Spin spinning={this.state.loading}>
@@ -242,10 +248,10 @@ class EditUserFrom extends React.Component {
                                         <Row>
                                             <Col span={24}>
                                                 <FormItem {...formItemLayout}
-                                                    label="登录帐号">
+                                                    label="登录账号">
                                                     {getFieldDecorator('uid',
-                                                    {rules:[{required:true,pattern:/^(((1[0-9]))+\d{9})$/,message:'请输入手机号作用登录帐号',}],initialValue:user.uid
-                                                    })(<Input type="text" disabled placeholder="请输入登录帐号" />)} 
+                                                    {rules:[{required:true,pattern:/^(((1[0-9]))+\d{9})$/,message:'请输入手机号作用登录账号',}],initialValue:user.uid
+                                                    })(<Input type="text" disabled placeholder="请输入登录账号" />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row> 
@@ -255,7 +261,7 @@ class EditUserFrom extends React.Component {
                                                     label="真实姓名">
                                                     {getFieldDecorator('realName',
                                                     {rules:[{required:true,pattern:/^[\u4E00-\u9FA5A-Za-z]+$/,message:'请输入真实姓名',}],initialValue:user.realName
-                                                    })(<Input type="text" placeholder="请输入登录帐号" />)} 
+                                                    })(<Input type="text" placeholder="请输入登录账号" />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row>                                                                             
@@ -275,7 +281,7 @@ class EditUserFrom extends React.Component {
                                                     label="公司名称">
                                                     {getFieldDecorator('company',
                                                     {rules:[{required:false}],initialValue:user.company
-                                                    })(<Input  />)} 
+                                                    })(<Input disabled={!isNeedEditCompany}  />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row>

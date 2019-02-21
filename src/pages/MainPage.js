@@ -165,7 +165,10 @@ class MainPage extends React.Component {
             
             window.wsSetFunc(base.onOpenNotification);
             // window.wsFunc();
-            base.onGetMessageList();
+            if(isAdmin || isFollow){
+                base.onGetMessageList();
+            }
+            
         });
 
     }
@@ -274,10 +277,10 @@ class MainPage extends React.Component {
             }
             subChartAdminMenu = <SubMenu key="barChart" title={<span><Icon type="bar-chart" />统计报表</span>}>                
                 <Menu.Item key="dash.charts.amount">
-                    <Link to='/dash/charts/amount'>帐务信息统计</Link>
+                    <Link to='/dash/charts/amount'>账务信息统计</Link>
                 </Menu.Item>
                 <Menu.Item key="dash.charts.category">
-                    <Link to='/dash/charts/category'>分类帐务统计</Link>
+                    <Link to='/dash/charts/category'>分类账务统计</Link>
                 </Menu.Item>
             </SubMenu>;    
             subUserAdminMenu = <SubMenu key="users" title={<span><Icon type="team" />用户管理</span>}>                

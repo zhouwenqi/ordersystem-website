@@ -186,7 +186,7 @@ class CreateBranchForm extends React.Component{
                                     </Col>
                                 </Row>
                             </TabPane>
-                            <TabPane tab="收款帐户" key="payment-info">                                                   
+                            <TabPane tab="收款账户" key="payment-info">                                                   
                                 <Row>
                                     <Col span={12}>                                                     
                                         <Row>
@@ -202,10 +202,10 @@ class CreateBranchForm extends React.Component{
                                         <Row>
                                             <Col span={24}>
                                                 <FormItem {...formItemLayout}
-                                                    label="收款银行帐号">
+                                                    label="收款银行账号">
                                                     {getFieldDecorator('bankAccountCode',
                                                     {rules:[{required:false}]
-                                                    })(<Input type="text" placeholder="请输入收款银行帐号" />)} 
+                                                    })(<Input type="text" placeholder="请输入收款银行账号" />)} 
                                                 </FormItem>                    
                                             </Col>
                                         </Row>

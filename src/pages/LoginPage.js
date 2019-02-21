@@ -39,7 +39,7 @@ class LoginPageForm extends React.Component {
                 return;
             }
             if(!response.user.isEnabled){
-                message.warning("帐号已被禁用");
+                message.warning("账号已被禁用");
                 return;
             }
             window.config.token = response.token;
@@ -74,8 +74,8 @@ class LoginPageForm extends React.Component {
                         <Form onSubmit={this.handleSubmit}>
                             <FormItem hasFeedback className="login-form-item">
                                 {getFieldDecorator('uid',{
-                                    rules:[{required:true,message:'请输入登录帐号!'}],
-                                })(<Input size="large" type="text" placeholder="帐号(手机号)" prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />} />)}                                                            
+                                    rules:[{required:true,message:'请输入登录账号!'}],
+                                })(<Input size="large" type="text" placeholder="账号(手机号)" prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />} />)}                                                            
                             </FormItem>
                             <FormItem hasFeedback  className="login-form-item-bottom">
                                {getFieldDecorator('pwd',{rules:[{required:true,message:'请输入登录密码!'}],

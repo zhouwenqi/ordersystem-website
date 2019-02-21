@@ -49,6 +49,7 @@ const WebUtils = {
         if(user){
             return user.realName+"("+user.uid+")";
         }
+        console.log("user:"+user);
         return undefined;
     },
     getEnumValue:(enumHash,tag)=>{
@@ -86,6 +87,14 @@ const WebUtils = {
         }
         return content;
 
+    },
+    getIsGover:(province)=>{
+        if(province){
+            if(province==='北京市' || province==='上海市' || province==='天津市' || province==='重庆市'){
+                return true;
+            }
+        }
+        return false;
     }
 }
 export default WebUtils;

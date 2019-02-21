@@ -316,7 +316,8 @@ class OrderListForm extends BasePage {
         const beforeSearchKeys = getFieldDecorator("searchProperty",{initialValue:"sn"})(
          <Select style={{minWidth:"120px"}}>
             <Option value="sn">订单号</Option>
-            <Option value="uid">帐号</Option>
+            <Option value="uid">账号</Option>
+            <Option value="company">公司名称</Option>
             <Option value="consumer_name">客户名称</Option>
             <Option value="consumer_contact">客户联系人</Option>
             <Option value="consumer_phone">联系电话</Option>
