@@ -90,8 +90,8 @@ class EditOrderForm extends BasePage {
         menuRoute:PropTypes.func
     }   
     componentWillMount = () =>{
-        // 文件表格列头
-        this.dataColumns = [
+        // 项目文件表格列头
+        this.dataProjectFileColumns = [
             {title:'文件名',sorter: true,dataIndex:'name',render:(text,record)=>(this.getFileNameCell(text,record))},
             {title:'文件路径',sorter: true,dataIndex:'path'},
             {title:'扩展名',sorter: true,dataIndex:'fileSuffix'},
@@ -99,7 +99,18 @@ class EditOrderForm extends BasePage {
             {title:'上传用户',sorter: true,dataIndex:'uid'},
             {title:'下载次数', width:100,sorter: true,dataIndex:'uploadCount'},
             {title:'上传时间',width:160,sorter: true,dataIndex:'createDate',defaultSortOrder: 'descend'},
-            {title:'操作',width:100,render:(record)=>(this.getOperationMenus(record))}
+            {title:'操作',width:100,render:(record)=>(this.getOperationMenus(record,'project'))}
+        ];
+        // 验收文件表格列头
+        this.dataCheckFileColumns = [
+            {title:'文件名',sorter: true,dataIndex:'name',render:(text,record)=>(this.getFileNameCell(text,record))},
+            {title:'文件路径',sorter: true,dataIndex:'path'},
+            {title:'扩展名',sorter: true,dataIndex:'fileSuffix'},
+            {title:'关联订单', width:200,sorter: true,dataIndex:'orderSn'},
+            {title:'上传用户',sorter: true,dataIndex:'uid'},
+            {title:'下载次数', width:100,sorter: true,dataIndex:'uploadCount'},
+            {title:'上传时间',width:160,sorter: true,dataIndex:'createDate',defaultSortOrder: 'descend'},
+            {title:'操作',width:100,render:(record)=>(this.getOperationMenus(record,'check'))}
         ];
     } 
     componentDidMount =() =>{        
@@ -111,9 +122,13 @@ class EditOrderForm extends BasePage {
     /**
      * 返回项目文件列表中的操作按钮
      */
-    getOperationMenus=(record)=>{
+    getOperationMenus=(record,colType)=>{
         let downBtn = <a className="item-a edit" onClick={this.onDownloadFile.bind(this,record.id)} href="javascript:;" title="下载"><Icon type="cloud-download" theme="outlined" /></a>;        
-        let deleteBtn = <a className="item-a delete" onClick={this.onDeleteFile.bind(this,record.id)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>;        
+        let deleteBtn = <a className="item-a delete" onClick={this.onDeleteFile.bind(this,record.id,colType)} href="javascript:;" title="删除"><Icon type="delete" theme="outlined" /></a>;  
+       
+        if(!this.state.isAdmin && window.config.user.id!==record.userId){
+            deleteBtn = undefined;
+        }
         return (<Row>{downBtn}{deleteBtn}</Row>);
     }
     getUploadConfig=(fileType)=>{
@@ -136,8 +151,8 @@ class EditOrderForm extends BasePage {
                     const response = info.file.response;                    
                     if(response){
                         if(response.code===200){
-                            Message.success(`${info.file.name} 文件上传成功`);
-                            if(fileType==='PROJECT'){
+                            Message.success(`${info.file.name} 文件上传成功`);                            
+                            if(fileType==='PROJECT'){                                
                                 base.searchProjectFile(base.state.pageProjectInfo);
                             }else if(fileType==='CHECK'){
                                 base.searchCheckFile(base.state.pageCheckInfo);
@@ -325,7 +340,7 @@ class EditOrderForm extends BasePage {
     handleProjectChange=(pagination,filters,sorter) => {        
         var pager = {...this.state.pageProjectInfo};
         pager.current = pagination.current;
-        pager.pageNumber = pagination.current;
+        pager.pageNumber = pagination.current;        
         if(sorter.field){
             pager.sortDirection = sorter.order.replace("end","");
             pager.sortField = WebUtils.getHumpString(sorter.field);
@@ -377,9 +392,9 @@ class EditOrderForm extends BasePage {
     onTabChangeHandler=(key)=>{
         const base = this;
         if(key==='project-file-info'){
-            base.searchProjectFile(base.state.pageInfo);
+            base.searchProjectFile(base.state.pageProjectInfo);
         }else if(key==='check-file-info'){
-            base.searchCheckFile(base.state.pageInfo);
+            base.searchCheckFile(base.state.pageCheckInfo);
         }
         console.log(key);
     }
@@ -399,7 +414,7 @@ class EditOrderForm extends BasePage {
     /**
      * 删除文件
      */
-    onDeleteFile=(fileId)=>{
+    onDeleteFile=(fileId,colType)=>{
         Confirm({
             title:"删除文件",
             content:"确定要删除这个文件吗？",
@@ -407,7 +422,12 @@ class EditOrderForm extends BasePage {
                 const data = {id:fileId};
                 const base = this;
                 HttpUtils.post('/api/order/file/delete',data).then(function(response){
-                    base.searchFile(base.state.pageInfo);
+                    if(colType==='project'){
+                        base.searchProjectFile(base.state.pageProjectInfo);
+                    }else if(colType==='check'){
+                        base.searchCheckFile(base.state.pageCheckInfo);
+                    }
+                    
                 });
             },
             onCancel:()=>{
@@ -1107,20 +1127,27 @@ class EditOrderForm extends BasePage {
                 </TabPane>;                
             }
 
+            // 订单项目资料
             TabPaneProjectFile =  <TabPane tab="项目资料" key="project-file-info">
                 <div className="grid-box">
                     <Upload {...this.getUploadConfig('PROJECT')}>
                         <Button icon="cloud-upload">上传文件</Button>   
                     </Upload>
-                    <Table style={{marginTop:"10px"}} locale={locale} footer={this.getTableFooter.bind(this,"project-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageProjectInfo} onChange={this.handleProjectChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.projectFileSource} bordered />
+                    <Table style={{marginTop:"10px"}} locale={locale} footer={this.getTableFooter.bind(this,"project-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageProjectInfo} onChange={this.handleProjectChange} rowKey="id" size="small" columns={this.dataProjectFileColumns} dataSource={this.state.projectFileSource} bordered />
                 </div>
                 </TabPane>;
+            
+            // 订单验收资料
+            let uploadCheckFileBtn = undefined;
+            if(this.state.isFollow || this.state.isAdmin)            {
+                uploadCheckFileBtn = <Upload {...this.getUploadConfig('CHECK')}>
+                <Button  icon="cloud-upload">上传文件</Button>   
+            </Upload>;
+            }
             TabPaneCheckFile = <TabPane tab="验收资料" key="check-file-info">
                 <div className="grid-box">
-                    <Upload {...this.getUploadConfig('CHECK')}>
-                        <Button icon="cloud-upload">上传文件</Button>   
-                    </Upload>
-                    <Table style={{marginTop:"10px"}} locale={locale} footer={this.getTableFooter.bind(this,"check-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageCheckInfo} onChange={this.handleCheckChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.checkFileSource} bordered />
+                    {uploadCheckFileBtn}
+                    <Table style={{marginTop:"10px"}} locale={locale} footer={this.getTableFooter.bind(this,"check-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageCheckInfo} onChange={this.handleCheckChange} rowKey="id" size="small" columns={this.dataCheckFileColumns} dataSource={this.state.checkFileSource} bordered />
                 </div>
                 </TabPane>;
             /**

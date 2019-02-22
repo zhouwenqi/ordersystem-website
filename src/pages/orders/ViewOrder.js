@@ -231,9 +231,9 @@ class ViewOrder extends BasePage {
     onTabChangeHandler=(key)=>{
         const base = this;
         if(key==='project-file-info'){
-            base.searchProjectFile(base.state.pageInfo);
+            base.searchProjectFile(base.state.pageProjectInfo);
         }else if(key==='check-file-info'){
-            base.searchCheckFile(base.state.pageInfo);
+            base.searchCheckFile(base.state.pageCheckInfo);
         }
         console.log(key);
     }
@@ -275,6 +275,7 @@ class ViewOrder extends BasePage {
             // 验收文件
             let TabPaneCheckFile = undefined;
             if(this.state.isAdmin){
+                // 订单详情信息
                 TabPaneMore = <TabPane tab="详细信息" key="more-info">
                     <div className="view-box">
                         <table className="view-table">
@@ -304,8 +305,16 @@ class ViewOrder extends BasePage {
                                     <td><span className="num">￥{order.routeServicePrice}</span></td>
                                 </tr>
                                 <tr>
-                                    <th rowSpan="4"></th>
-                                    <td rowSpan="4"></td>
+                                    <th rowSpan="6"></th>
+                                    <td rowSpan="6"></td>
+                                    <th>厂商其它费用：</th>
+                                    <td><span className="num">￥{order.otherPrice}</span></td>
+                                </tr>
+                                <tr>                                    
+                                    <th>厂商其它费用说明：</th>
+                                    <td><span>{order.otherPriceDescription}</span></td>
+                                </tr>
+                                <tr>                                    
                                     <th>与网点结算价格：</th>
                                     <td><span className="num">￥{order.branchBalancePrice}</span></td>
                                 </tr>
@@ -326,6 +335,57 @@ class ViewOrder extends BasePage {
                     </div>
                 </TabPane>;
 
+                // 订单详细信息(跟单员)
+                if(window.config.user.role==='follow'){
+                    TabPaneMore = <TabPane tab="详细信息" key="more-info">
+                        <div className="view-box">
+                            <table className="view-table">
+                                <tbody>
+                                    <tr>
+                                        <th>项目跟进人：</th>
+                                        <td><span>{WebUtils.getViewUserName(order.trackUser)}</span></td>
+                                        <th>每路服务费用：</th>
+                                        <td><span className="num">￥{order.routeServicePrice}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <th>网点：</th>
+                                        <td><span>{order.branch?order.branch.name:undefined}</span></td>
+                                        <th>厂商其它费用：</th>
+                                        <td><span className="num">￥{order.otherPrice}</span></td>
+                                    </tr>                                
+                                    <tr>
+                                        <th>联系电话：</th>
+                                        <td><span>{order.branch?order.branch.phone:undefined}</span></td>
+                                        <th>厂商其它费用说明：</th>
+                                        <td><span>{order.otherPriceDescription}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <th>邮箱：</th>
+                                        <td><span>{order.branch?order.branch.email:undefined}</span></td>
+                                        <th>与网点结算价格：</th>
+                                        <td><span className="num">￥{order.branchBalancePrice}</span></td>
+                                    </tr>                                    
+                                    <tr>
+                                        <th rowSpan="3"></th>
+                                        <td rowSpan="3"></td>
+                                        <th>网点其它费用：</th>
+                                        <td><span className="num">￥{order.branchOtherPrice}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <th>网点其它费用说明：</th>
+                                        <td><span>{order.branchOtherPriceDescription}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <th>实际付款金额：</th>
+                                        <td><span className="num">￥{order.actualPaymentPrice}</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </TabPane>;
+                }
+
+                // 帐务信息
                 TabPanePayment = <TabPane tab="账务信息" key="payment-info">
                     <div className="view-box">
                         <table className="view-table">
@@ -374,22 +434,9 @@ class ViewOrder extends BasePage {
                         </table>
                     </div>
                 </TabPane>;
+            }            
 
-                TabPaneProjectFile = <TabPane tab="项目资料" key="project-file-info">
-                    <div className="grid-box">
-                        <Table locale={locale} footer={this.getTableFooter.bind(this,"project-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageProjectInfo} onChange={this.handleProjectChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.projectFileSource} bordered />
-                    </div>
-                </TabPane>;
-
-                TabPaneCheckFile = <TabPane tab="验收资料" key="check-file-info">
-                <div className="grid-box">
-                    <Table locale={locale} footer={this.getTableFooter.bind(this,"check-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageCheckInfo} onChange={this.handleCheckChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.checkFileSource} bordered />
-                </div>
-                </TabPane>;
-
-                
-            }
-
+            
             let OrderEvents = [];
             if(order.orderEvents.length>0){
                 order.orderEvents.map((item,index)=>{
@@ -410,6 +457,7 @@ class ViewOrder extends BasePage {
                 )
 
             }
+            // 订单实时状态
             TabPaneEvent = <TabPane tab="实时状态" key="event-info">
                 <div className="view-box">
                     <table className="view-table">
@@ -427,6 +475,20 @@ class ViewOrder extends BasePage {
                     </table>
                 </div>
             </TabPane>
+
+            // 项目资料文件
+            TabPaneProjectFile = <TabPane tab="项目资料" key="project-file-info">
+                <div className="grid-box">
+                    <Table locale={locale} footer={this.getTableFooter.bind(this,"project-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageProjectInfo} onChange={this.handleProjectChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.projectFileSource} bordered />
+                </div>
+            </TabPane>;
+
+            // 项目验收文件列表
+            TabPaneCheckFile = <TabPane tab="验收资料" key="check-file-info">
+            <div className="grid-box">
+                <Table locale={locale} footer={this.getTableFooter.bind(this,"check-file-info")} loading={this.state.loading} sorter={this.setState.sorter} pagination={this.state.pageCheckInfo} onChange={this.handleCheckChange} rowKey="id" size="small" columns={this.dataColumns} dataSource={this.state.checkFileSource} bordered />
+            </div>
+            </TabPane>;
 
             viewContent = <div className="grid-form" style={{padding:"10px 0px"}}><Tabs onChange={this.onTabChangeHandler.bind(this)} tabBarExtraContent={extOperations} type="card">
                 <TabPane tab="订单信息" key="basic-info">
