@@ -515,7 +515,7 @@ class ViewOrder extends BasePage {
                                 </tr>
                                 <tr>
                                     <th>订单工期：</th>
-                                    <td><span>{Moment(order.orderTime).format("YYYY-MM-DD")}</span></td>
+                                    <td><span>{order.orderTime?Moment(order.orderTime).format("YYYY-MM-DD"):undefined}</span></td>
                                     <th rowSpan="5">服务内容：</th>
                                     <td rowSpan="5"><span dangerouslySetInnerHTML={{__html:WebUtils.getReaplceChar(order.serviceContent)}}></span></td>
                                 </tr>
