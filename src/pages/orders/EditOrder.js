@@ -562,9 +562,10 @@ class EditOrderForm extends BasePage {
         let values = this.props.form.getFieldsValue(["routeQuantity","routePrice","otherPrice"]);        
         values[tag]=e;
         this.props.form.setFieldsValue({
-            totalPrice:Math.floor(values.routeQuantity) * Math.floor(values.routePrice),
-            actualPrice:Math.floor(values.routeQuantity) * Math.floor(values.routePrice) + Math.floor(values.otherPrice)
+            totalPrice:values.routeQuantity * values.routePrice,
+            actualPrice:values.routeQuantity * values.routePrice + values.otherPrice
         });
+        console.log(values);
     }
 
     /**
@@ -575,8 +576,8 @@ class EditOrderForm extends BasePage {
             let values = this.props.form.getFieldsValue(["routeQuantity","routeServicePrice","branchBalancePrice","branchOtherPrice"]);        
             values[tag] = e;
             this.props.form.setFieldsValue({
-                branchBalancePrice:Math.floor(values.routeQuantity)*Math.floor(values.routeServicePrice),
-                actualPaymentPrice:Math.floor(values.routeQuantity)*Math.floor(values.routeServicePrice) + Math.floor(values.branchOtherPrice),
+                branchBalancePrice:values.routeQuantity*values.routeServicePrice,
+                actualPaymentPrice:values.routeQuantity*values.routeServicePrice + values.branchOtherPrice,
             });
         }
     }
@@ -918,7 +919,7 @@ class EditOrderForm extends BasePage {
                                         label="实际总额">
                                         {getFieldDecorator('actualPrice',
                                         {rules:[{required:true,message:'请填写实际总额(默认为0)'}],initialValue:order.actualPrice
-                                        })(<InputNumber min={0} precision={2} />)} 
+                                        })(<InputNumber  min={0} precision={2} />)} 
                                     </FormItem>                    
                                 </Col>
                             </Row>
@@ -943,7 +944,7 @@ class EditOrderForm extends BasePage {
                                         label="与网点结算价格">
                                         {getFieldDecorator('branchBalancePrice',
                                         {rules:[{required:true,message:'请填写与网点结算价格(默认为0)'}],initialValue:order.branchBalancePrice
-                                        })(<InputNumber disabled={followFormDisabled} onChange={(e)=>{this.onChangePaymentPrice(e,'branchBalancePrice')}} min={0} precision={2} />)} 
+                                        })(<InputNumber  disabled={followFormDisabled} onChange={(e)=>{this.onChangePaymentPrice(e,'branchBalancePrice')}} min={0} precision={2} />)} 
                                     </FormItem>                    
                                 </Col>
                             </Row>
@@ -953,7 +954,7 @@ class EditOrderForm extends BasePage {
                                         label="网点其它费用">
                                         {getFieldDecorator('branchOtherPrice',
                                         {rules:[{required:true,message:'请填写网点其它费用(默认为0)'}],initialValue:order.branchOtherPrice
-                                        })(<InputNumber onChange={(e)=>{this.onChangePaymentPrice(e,'branchOtherPrice')}} min={0} precision={2} />)} 
+                                        })(<InputNumber  onChange={(e)=>{this.onChangePaymentPrice(e,'branchOtherPrice')}} min={0} precision={2} />)} 
                                     </FormItem>                    
                                 </Col>
                             </Row>
@@ -973,7 +974,7 @@ class EditOrderForm extends BasePage {
                                         label="实际付款金额">
                                         {getFieldDecorator('actualPaymentPrice',
                                         {rules:[{required:true,message:'请填写实际付款金额(默认为0)'}],initialValue:order.actualPaymentPrice
-                                        })(<InputNumber disabled={followFormDisabled} min={0} precision={2} />)} 
+                                        })(<InputNumber  disabled={followFormDisabled} min={0} precision={2} />)} 
                                     </FormItem>                    
                                 </Col>
                             </Row>
